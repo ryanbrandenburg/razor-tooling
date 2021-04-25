@@ -10,15 +10,19 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.AspNetCore.Razor.LanguageServer.Common.Extensions;
 using Microsoft.AspNetCore.Razor.LanguageServer.Extensions;
+using Microsoft.AspNetCore.Razor.LanguageServer.Common;
+using Microsoft.AspNetCore.Razor.LanguageServer.Expansion;
 using Microsoft.AspNetCore.Razor.LanguageServer.ProjectSystem;
 using Microsoft.AspNetCore.Razor.LanguageServer.Tooltip;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Razor;
 using Microsoft.CodeAnalysis.Razor.Completion;
 using Microsoft.Extensions.Logging;
+using OmniSharp.Extensions.LanguageServer.Protocol;
 using OmniSharp.Extensions.LanguageServer.Protocol.Client.Capabilities;
 using OmniSharp.Extensions.LanguageServer.Protocol.Document;
 using OmniSharp.Extensions.LanguageServer.Protocol.Models;
+using OmniSharp.Extensions.LanguageServer.Protocol.Server;
 
 namespace Microsoft.AspNetCore.Razor.LanguageServer.Completion
 {
@@ -27,6 +31,8 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Completion
         private readonly ILogger _logger;
         private readonly ProjectSnapshotManagerDispatcher _projectSnapshotManagerDispatcher;
         private readonly DocumentResolver _documentResolver;
+        private readonly IClientLanguageServer _server;
+        private readonly RazorDocumentMappingService _documentMappingService;
         private readonly RazorCompletionFactsService _completionFactsService;
         private readonly LSPTagHelperTooltipFactory _lspTagHelperTooltipFactory;
         private readonly VSLSPTagHelperTooltipFactory _vsLspTagHelperTooltipFactory;
@@ -46,6 +52,8 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Completion
         public RazorCompletionEndpoint(
             ProjectSnapshotManagerDispatcher projectSnapshotManagerDispatcher,
             DocumentResolver documentResolver,
+            IClientLanguageServer server,
+            RazorDocumentMappingService documentMappingService,
             RazorCompletionFactsService completionFactsService,
             LSPTagHelperTooltipFactory lspTagHelperTooltipFactory,
             VSLSPTagHelperTooltipFactory vsLspTagHelperTooltipFactory,
@@ -60,6 +68,16 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Completion
             if (documentResolver == null)
             {
                 throw new ArgumentNullException(nameof(documentResolver));
+            }
+
+            if (server is null)
+            {
+                throw new ArgumentNullException(nameof(server));
+            }
+
+            if (documentMappingService is null)
+            {
+                throw new ArgumentNullException(nameof(documentMappingService));
             }
 
             if (completionFactsService == null)
@@ -89,6 +107,8 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Completion
 
             _projectSnapshotManagerDispatcher = projectSnapshotManagerDispatcher;
             _documentResolver = documentResolver;
+            _server = server;
+            _documentMappingService = documentMappingService;
             _completionFactsService = completionFactsService;
             _lspTagHelperTooltipFactory = lspTagHelperTooltipFactory;
             _vsLspTagHelperTooltipFactory = vsLspTagHelperTooltipFactory;
@@ -119,9 +139,10 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Completion
 
         public async Task<CompletionList> Handle(CompletionParams request, CancellationToken cancellationToken)
         {
+            var documentFilePath = request.TextDocument.Uri.GetAbsoluteOrUNCPath();
             var document = await _projectSnapshotManagerDispatcher.RunOnDispatcherThreadAsync(() =>
             {
-                _documentResolver.TryResolveDocument(request.TextDocument.Uri.GetAbsoluteOrUNCPath(), out var documentSnapshot);
+                _documentResolver.TryResolveDocument(documentFilePath, out var documentSnapshot);
 
                 return documentSnapshot;
             }, CancellationToken.None).ConfigureAwait(false);
@@ -158,6 +179,44 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Completion
             var completionContext = new RazorCompletionContext(syntaxTree, tagHelperDocumentContext, reason);
 
             var razorCompletionItems = _completionFactsService.GetCompletionItems(completionContext, location);
+
+            var languageKind = _documentMappingService.GetLanguageKind(codeDocument, hostDocumentIndex);
+            if (languageKind == RazorLanguageKind.CSharp)
+            {
+                var delegatedHoverParams = request;
+                var virtualFilePath = "/" + documentFilePath + RazorServerLSPConstants.VirtualCSharpFileNameSuffix;
+                var virtualDocumentUri = new DocumentUri(RazorServerLSPConstants.EmbeddedFileScheme, authority: string.Empty, path: virtualFilePath, query: string.Empty, fragment: string.Empty);
+                delegatedHoverParams.TextDocument.Uri = virtualDocumentUri;
+                if (_documentMappingService.TryMapToProjectedDocumentPosition(codeDocument, hostDocumentIndex, out var projectedPosition, out var projectedIndex))
+                {
+                    delegatedHoverParams.Position = projectedPosition;
+                }
+                delegatedHoverParams.WorkDoneToken = null;
+                var delegatedRequest = _server.SendRequest("textDocument/completion", delegatedHoverParams);
+                var completionModel = await delegatedRequest.Returning<CompletionList>(cancellationToken).ConfigureAwait(false);
+                if (completionModel != null)
+                {
+                    return completionModel;
+                }
+            }
+            else if (languageKind == RazorLanguageKind.Html)
+            {
+                var delegatedHoverParams = request;
+                var virtualFilePath = "/" + documentFilePath + RazorServerLSPConstants.VirtualHtmlFileNameSuffix;
+                var virtualDocumentUri = new DocumentUri(RazorServerLSPConstants.EmbeddedFileScheme, authority: string.Empty, path: virtualFilePath, query: string.Empty, fragment: string.Empty);
+                delegatedHoverParams.TextDocument.Uri = virtualDocumentUri;
+                if (_documentMappingService.TryMapToProjectedDocumentPosition(codeDocument, hostDocumentIndex, out var projectedPosition, out var projectedIndex))
+                {
+                    delegatedHoverParams.Position = projectedPosition;
+                }
+                delegatedHoverParams.WorkDoneToken = null;
+                var delegatedRequest = _server.SendRequest("textDocument/completion", delegatedHoverParams);
+                var completionModel = await delegatedRequest.Returning<CompletionList>(cancellationToken).ConfigureAwait(false);
+                if (completionModel != null)
+                {
+                    return completionModel;
+                }
+            }
 
             _logger.LogTrace($"Resolved {razorCompletionItems.Count} completion items.");
 

@@ -72,8 +72,8 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             if (UnchangedHostDocument(document, latestSynchronizedDocument, syncVersion))
             {
                 // Documents are identical but we didn't synchronize them because they didn't need to be re-evaluated.
-                _generatedDocumentPublisher.PublishCSharp(document.FilePath, documentContainer.CSharpSourceTextContainer.CurrentText, syncVersion);
-                _generatedDocumentPublisher.PublishHtml(document.FilePath, documentContainer.HtmlSourceTextContainer.CurrentText, syncVersion);
+                //_generatedDocumentPublisher.PublishCSharp(document.FilePath, documentContainer.CSharpSourceTextContainer.CurrentText, syncVersion);
+                //_generatedDocumentPublisher.PublishHtml(document.FilePath, documentContainer.HtmlSourceTextContainer.CurrentText, syncVersion);
             }
         }
 

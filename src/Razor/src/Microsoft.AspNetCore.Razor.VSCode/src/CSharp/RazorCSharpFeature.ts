@@ -24,8 +24,8 @@ export class RazorCSharpFeature {
 
     public register() {
         const registrations = [
-            vscode.workspace.registerTextDocumentContentProvider(
-                CSharpProjectedDocumentContentProvider.scheme, this.projectionProvider),
+            // vscode.workspace.registerTextDocumentContentProvider(
+            //     CSharpProjectedDocumentContentProvider.scheme, this.projectionProvider),
             vscode.commands.registerCommand(
                 'extension.showRazorCSharpWindow', () => this.csharpPreviewPanel.show()),
         ];

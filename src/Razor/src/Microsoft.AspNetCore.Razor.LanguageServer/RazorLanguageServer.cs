@@ -36,6 +36,13 @@ using OmniSharp.Extensions.LanguageServer.Protocol.Serialization;
 using OmniSharp.Extensions.LanguageServer.Protocol.Server;
 using OmniSharp.Extensions.LanguageServer.Server;
 using Microsoft.AspNetCore.Razor.LanguageServer.LinkedEditingRange;
+using System.Threading;
+using Microsoft.AspNetCore.Razor.LanguageServer.Refactoring;
+using Microsoft.AspNetCore.Razor.LanguageServer.Definition;
+using Microsoft.CodeAnalysis.Razor.Workspaces;
+using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.AspNetCore.Razor.LanguageServer.Tooltip;
+using Microsoft.AspNetCore.Razor.LanguageServer.Expansion;
 
 namespace Microsoft.AspNetCore.Razor.LanguageServer
 {
@@ -130,6 +137,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
                     .WithHandler<RazorComponentRenameEndpoint>()
                     .WithHandler<RazorDefinitionEndpoint>()
                     .WithHandler<LinkedEditingRangeEndpoint>()
+                    .WithHandler<RazorFileSystemEndpoint>()
                     .WithServices(services =>
                     {
                         services.AddLogging(builder => builder
@@ -137,6 +145,10 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
                             .AddLanguageProtocolLogging());
 
                         services.AddSingleton<RequestInvoker, RazorOmniSharpRequestInvoker>();
+
+                        // Extensions
+                        services.AddSingleton<FileSystemProvider, RazorFileSystemProvider>();
+                        services.AddSingleton<ProjectSnapshotChangeTrigger>((services) => services.GetRequiredService<FileSystemProvider>());
 
                         services.AddSingleton<FilePathNormalizer>();
                         services.AddSingleton<ProjectSnapshotManagerDispatcher, LSPProjectSnapshotManagerDispatcher>();

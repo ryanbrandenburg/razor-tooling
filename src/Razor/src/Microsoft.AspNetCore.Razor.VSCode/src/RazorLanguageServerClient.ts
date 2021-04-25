@@ -11,6 +11,7 @@ import {
     LanguageClientOptions,
     RequestHandler,
     RequestType,
+    ServerCapabilities,
     ServerOptions,
     State,
 } from 'vscode-languageclient/lib/main';
@@ -46,6 +47,12 @@ export class RazorLanguageServerClient implements vscode.Disposable {
         this.setupLanguageServer();
 
         this.eventBus = new EventEmitter();
+    }
+
+    public get serverCapabilities() : ServerCapabilities | undefined {
+        if (this.client.initializeResult) {
+            return this.client.initializeResult.capabilities
+        }
     }
 
     public updateTraceLevel() {
@@ -151,6 +158,14 @@ export class RazorLanguageServerClient implements vscode.Disposable {
         }
 
         return this.client.sendRequest<TResponseType>(method, param);
+    }
+
+    public async sendNotification(method: string, param: any) {
+        if (!this.isStarted) {
+            throw new Error('Tried to send notifications while server is not started.');
+        }
+
+        return this.client.sendNotification(method, param);
     }
 
     public onRequest<TResponse, TError>(method: string, handler: GenericRequestHandler<TResponse, TError>) {

@@ -133,7 +133,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.ProjectSystem
             _projectSnapshotManagerAccessor.Instance.DocumentAdded(defaultProject.HostProject, hostDocument, textLoader);
         }
 
-        public override void OpenDocument(string filePath, SourceText sourceText, int version)
+        public override DocumentSnapshot OpenDocument(string filePath, SourceText sourceText, int version)
         {
             _projectSnapshotManagerDispatcher.AssertDispatcherThread();
 
@@ -162,6 +162,8 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.ProjectSystem
                 // Start generating the C# for the document so it can immediately be ready for incoming requests.
                 _ = documentSnapshot.GetGeneratedOutputAsync();
             }
+
+            return documentSnapshot;
         }
 
         public override void CloseDocument(string filePath)
@@ -202,7 +204,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.ProjectSystem
             _projectSnapshotManagerAccessor.Instance.DocumentRemoved(defaultProject.HostProject, document.State.HostDocument);
         }
 
-        public override void UpdateDocument(string filePath, SourceText sourceText, int version)
+        public override DocumentSnapshot UpdateDocument(string filePath, SourceText sourceText, int version)
         {
             _projectSnapshotManagerDispatcher.AssertDispatcherThread();
 
@@ -216,7 +218,8 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.ProjectSystem
             _logger.LogTrace($"Updating document '{textDocumentPath}'.");
             _projectSnapshotManagerAccessor.Instance.DocumentChanged(defaultProject.HostProject.FilePath, textDocumentPath, sourceText);
 
-            TrackDocumentVersion(textDocumentPath, version);
+            var documentSnapshot = TrackDocumentVersion(textDocumentPath, version);
+            return documentSnapshot;
         }
 
         public override void AddProject(string filePath)
@@ -464,14 +467,15 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.ProjectSystem
             }
         }
 
-        private void TrackDocumentVersion(string textDocumentPath, int version)
+        private DocumentSnapshot TrackDocumentVersion(string textDocumentPath, int version)
         {
             if (!_documentResolver.TryResolveDocument(textDocumentPath, out var documentSnapshot))
             {
-                return;
+                return null;
             }
 
             _documentVersionCache.TrackDocumentVersion(documentSnapshot, version);
+            return documentSnapshot;
         }
 
         private class DelegatingTextLoader : TextLoader

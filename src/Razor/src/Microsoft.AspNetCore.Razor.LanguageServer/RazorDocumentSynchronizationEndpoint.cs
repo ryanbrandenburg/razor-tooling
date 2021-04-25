@@ -7,8 +7,10 @@ using System.Threading;
 using System.Threading.Tasks;
 using MediatR;
 using Microsoft.AspNetCore.Razor.LanguageServer.Extensions;
+using Microsoft.AspNetCore.Razor.LanguageServer.Expansion;
 using Microsoft.AspNetCore.Razor.LanguageServer.ProjectSystem;
 using Microsoft.CodeAnalysis.Razor;
+using Microsoft.CodeAnalysis.Razor.Workspaces;
 using Microsoft.CodeAnalysis.Text;
 using Microsoft.Extensions.Logging;
 using OmniSharp.Extensions.LanguageServer.Protocol;
@@ -25,11 +27,13 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
         private readonly ProjectSnapshotManagerDispatcher _projectSnapshotManagerDispatcher;
         private readonly DocumentResolver _documentResolver;
         private readonly RazorProjectService _projectService;
+        private readonly GeneratedDocumentPublisher _generatedDocumentPublisher;
 
         public RazorDocumentSynchronizationEndpoint(
             ProjectSnapshotManagerDispatcher projectSnapshotManagerDispatcher,
             DocumentResolver documentResolver,
             RazorProjectService projectService,
+            GeneratedDocumentPublisher generatedDocumentPublisher,
             ILoggerFactory loggerFactory)
         {
             if (projectSnapshotManagerDispatcher is null)
@@ -47,7 +51,12 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
                 throw new ArgumentNullException(nameof(projectService));
             }
 
-            if (loggerFactory is null)
+            if (generatedDocumentPublisher is null)
+            {
+                throw new ArgumentNullException(nameof(generatedDocumentPublisher));
+            }
+
+            if (loggerFactory == null)
             {
                 throw new ArgumentNullException(nameof(loggerFactory));
             }
@@ -55,6 +64,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             _projectSnapshotManagerDispatcher = projectSnapshotManagerDispatcher;
             _documentResolver = documentResolver;
             _projectService = projectService;
+            _generatedDocumentPublisher = generatedDocumentPublisher;
             _logger = loggerFactory.CreateLogger<RazorDocumentSynchronizationEndpoint>();
         }
 
@@ -77,9 +87,12 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
                 throw new InvalidOperationException(RazorLS.Resources.Version_Should_Not_Be_Null);
             }
 
-            await _projectSnapshotManagerDispatcher.RunOnDispatcherThreadAsync(
+            var updatedDocumentSnapshot = await _projectSnapshotManagerDispatcher.RunOnDispatcherThreadAsync(
                 () => _projectService.UpdateDocument(document.FilePath, sourceText, notification.TextDocument.Version.Value),
                 CancellationToken.None).ConfigureAwait(false);
+
+            var codeDocument = await updatedDocumentSnapshot.GetGeneratedOutputAsync().ConfigureAwait(false);
+            _ = _generatedDocumentPublisher.PublishGeneratedDocumentsAsync(updatedDocumentSnapshot.FilePath, codeDocument, notification.TextDocument.Version.Value, token);
 
             return Unit.Value;
         }
