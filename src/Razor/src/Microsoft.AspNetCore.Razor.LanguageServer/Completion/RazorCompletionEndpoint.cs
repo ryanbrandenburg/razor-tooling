@@ -332,13 +332,50 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Completion
             {
                 case RazorCompletionItemKind.Directive:
                     {
+                        var insertText = razorCompletionItem.DisplayText;
+                        var insertTextFormat = InsertTextFormat.PlainText;
+                        if (insertText == "inject")
+                        {
+                            insertText = "inject ${1:Type} ${2:Property};$0";
+                            insertTextFormat = InsertTextFormat.Snippet;
+                        }
+
+                        if (insertText == "code")
+                        {
+                            insertText = @"code {
+    $0
+}";
+                            insertTextFormat = InsertTextFormat.Snippet;
+                        }
+
+                        if (insertText == "section")
+                        {
+                            insertText = @"section ${1:Name} {
+    $0
+}";
+                            insertTextFormat = InsertTextFormat.Snippet;
+                        }
+
+                        if (insertText == "inherits")
+                        {
+                            insertText = @"inherits ${1:BaseType};$0";
+                            insertTextFormat = InsertTextFormat.Snippet;
+                        }
+
+                        if (insertText == "page")
+                        {
+                            insertText = "page \"$1\"$0";
+                            insertTextFormat = InsertTextFormat.Snippet;
+                        }
+
                         var directiveCompletionItem = new CompletionItem()
                         {
                             Label = razorCompletionItem.DisplayText,
-                            InsertText = razorCompletionItem.InsertText,
+                            InsertText = insertText,
                             FilterText = razorCompletionItem.DisplayText,
                             SortText = razorCompletionItem.DisplayText,
                             Kind = CompletionItemKind.Struct,
+                            InsertTextFormat = insertTextFormat,
                         };
 
                         if (razorCompletionItem.CommitCharacters != null && razorCompletionItem.CommitCharacters.Count > 0)

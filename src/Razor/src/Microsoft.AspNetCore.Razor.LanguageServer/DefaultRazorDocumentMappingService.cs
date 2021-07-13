@@ -391,7 +391,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             if(!_haveAsserted && !result)
             {
                 _haveAsserted = true;
-                Debug.Fail($"Attempted to map a range {range} outside of the Source (line count {sourceText.Lines.Count}.) This could happen if the Roslyn and Razor LSP servers are not in sync.");
+                //Debug.Fail($"Attempted to map a range {range} outside of the Source (line count {sourceText.Lines.Count}.) This could happen if the Roslyn and Razor LSP servers are not in sync.");
             }
 
             return result;

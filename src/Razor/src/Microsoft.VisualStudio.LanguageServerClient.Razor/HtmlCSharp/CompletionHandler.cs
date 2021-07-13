@@ -268,14 +268,75 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             TextExtent? wordExtent,
             CompletionList completionList)
         {
+            var lineStart = wordExtent.Value.Span.Start.GetContainingLine().Start.Position;
+            var baseIndentation = wordExtent.Value.Span.Start.Position - lineStart;
             if (IsSimpleImplicitExpression(request, documentSnapshot, wordExtent))
             {
                 completionList = RemovePreselection(completionList);
                 completionList = IncludeCSharpKeywords(completionList);
+
+                // Need to account for the transition
+                baseIndentation--;
             }
 
+            completionList = IncludeCSharpSnippets(baseIndentation, completionList);
             completionList = RemoveDesignTimeItems(documentSnapshot, wordExtent, completionList);
 
+            return completionList;
+        }
+
+        private static CompletionList IncludeCSharpSnippets(int baseIndentation, CompletionList completionList)
+        {
+            var forSnippet = new CompletionItem()
+            {
+                Label = "for (...)",
+                InsertText =
+@$"for (var ${{1:i}} = 0; i < ${{2:length}}; ${{3:i}})
+{new string(' ', baseIndentation)}{{
+{new string(' ', baseIndentation + 4)}$0
+{new string(' ', baseIndentation)}}}",
+                InsertTextFormat = InsertTextFormat.Snippet,
+                Kind = CompletionItemKind.Snippet,
+            };
+            var foreachSnippet = new CompletionItem()
+            {
+                Label = "foreach (...)",
+                InsertText =
+@$"foreach (${{1:var}} ${{2:item}} in ${{3:collection}})
+{new string(' ', baseIndentation)}{{
+{new string(' ', baseIndentation + 4)}$0
+{new string(' ', baseIndentation)}}}",
+                InsertTextFormat = InsertTextFormat.Snippet,
+                Kind = CompletionItemKind.Snippet,
+            };
+            var ifSnippet = new CompletionItem()
+            {
+                Label = "if (...)",
+                InsertText =
+@$"if (${{1:true}})
+{new string(' ', baseIndentation)}{{
+{new string(' ', baseIndentation + 4)}$0
+{new string(' ', baseIndentation)}}}",
+                InsertTextFormat = InsertTextFormat.Snippet,
+                Kind = CompletionItemKind.Snippet,
+            };
+            var propSnippet = new CompletionItem()
+            {
+                Label = "prop",
+                InsertText = "public ${1:int} ${2:MyProperty} { get; set; }$0",
+                InsertTextFormat = InsertTextFormat.Snippet,
+                Kind = CompletionItemKind.Snippet,
+            };
+
+            var snippets = new[]
+            {
+                forSnippet,
+                foreachSnippet,
+                ifSnippet,
+                propSnippet,
+            };
+            var newList = completionList.Items.Union(snippets, CompletionItemComparer.Instance);
+            completionList.Items = newList.ToArray();
             return completionList;
         }
 
