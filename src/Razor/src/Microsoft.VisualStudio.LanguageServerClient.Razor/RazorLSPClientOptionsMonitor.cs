@@ -3,6 +3,7 @@
 
 using System.Composition;
 using Microsoft.CodeAnalysis.Razor.Editor;
+using Microsoft.CodeAnalysis.Razor.Workspaces.Editor;
 
 namespace Microsoft.VisualStudio.LanguageServerClient.Razor
 {
@@ -14,6 +15,12 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
     [Export(typeof(RazorLSPClientOptionsMonitor))]
     internal class RazorLSPClientOptionsMonitor
     {
+        [ImportingConstructor]
+        public RazorLSPClientOptionsMonitor(AnalyzerConfigManager editorSettingsManager)
+        {
+
+        }
+
         public EditorSettings EditorSettings { get; private set; }
 
         public void UpdateOptions(EditorSettings editorSettings)

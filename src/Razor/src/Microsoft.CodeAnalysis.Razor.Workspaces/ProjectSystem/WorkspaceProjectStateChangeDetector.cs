@@ -12,6 +12,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Razor.Language.Components;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Razor.Workspaces;
+using Microsoft.CodeAnalysis.Razor.Workspaces.Editor;
 using Microsoft.CodeAnalysis.Razor.Workspaces.Extensions;
 
 namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
@@ -24,6 +25,7 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
         private readonly object _disposeLock = new();
         private readonly ProjectWorkspaceStateGenerator _workspaceStateGenerator;
         private readonly ProjectSnapshotManagerDispatcher _projectSnapshotManagerDispatcher;
+        private readonly AnalyzerConfigManager _analyzerConfigManager;
         private BatchingWorkQueue? _workQueue;
         private ProjectSnapshotManagerBase? _projectManager;
         private bool _disposed;
@@ -44,7 +46,8 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
         [ImportingConstructor]
         public WorkspaceProjectStateChangeDetector(
             ProjectWorkspaceStateGenerator workspaceStateGenerator,
-            ProjectSnapshotManagerDispatcher projectSnapshotManagerDispatcher)
+            ProjectSnapshotManagerDispatcher projectSnapshotManagerDispatcher,
+            AnalyzerConfigManager editorSettingsManager)
         {
             if (workspaceStateGenerator is null)
             {
@@ -56,8 +59,14 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
                 throw new ArgumentNullException(nameof(projectSnapshotManagerDispatcher));
             }
 
+            if (editorSettingsManager is null)
+            {
+                throw new ArgumentNullException(nameof(editorSettingsManager));
+            }
+
             _workspaceStateGenerator = workspaceStateGenerator;
             _projectSnapshotManagerDispatcher = projectSnapshotManagerDispatcher;
+            _analyzerConfigManager = editorSettingsManager;
         }
 
         // Internal for testing
@@ -271,6 +280,16 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
                             },
                             (self: this, oldProjectPaths: e.OldSolution?.Projects.Select(p => p?.FilePath), e.NewSolution),
                             CancellationToken.None).ConfigureAwait(false);
+                        break;
+                    case WorkspaceChangeKind.AnalyzerConfigDocumentAdded:
+                    case WorkspaceChangeKind.AnalyzerConfigDocumentChanged:
+                    case WorkspaceChangeKind.AnalyzerConfigDocumentReloaded:
+                        await _analyzerConfigManager.AddOrUpdateAnalyzerConfigDocumentAsync(
+                            e.DocumentId, e.NewSolution, CancellationToken.None).ConfigureAwait(false);
+                        break;
+                    case WorkspaceChangeKind.AnalyzerConfigDocumentRemoved:
+                        await _analyzerConfigManager.RemoveAnalyzerConfigDocumentAsync(
+                            e.DocumentId, e.OldSolution, CancellationToken.None).ConfigureAwait(false);
                         break;
                 }
 
