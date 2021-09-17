@@ -1,7 +1,6 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the MIT license. See License.txt in the project root for license information.
 
-using Microsoft.Extensions.Options;
 using Moq;
 using Xunit;
 
@@ -39,8 +38,8 @@ expected: @"
 
         internal override RazorOnAutoInsertProvider CreateProvider()
         {
-            var optionsMonitor = new Mock<IOptionsMonitor<RazorLSPOptions>>(MockBehavior.Strict);
-            optionsMonitor.SetupGet(o => o.CurrentValue).Returns(RazorLSPOptions.Default);
+            var optionsMonitor = new Mock<RazorLSPOptionsMonitor>(MockBehavior.Strict);
+            optionsMonitor.SetupGet(o => o.GetCurrentOptions).Returns(RazorLSPOptions.Default);
             var provider = new CloseTextTagOnAutoInsertProvider(optionsMonitor.Object);
 
             return provider;

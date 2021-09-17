@@ -36,8 +36,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
                 throw new ArgumentNullException(nameof(document));
             }
 
-            // TO-DO: We should switch to a per-document implementation once Razor starts supporting .editorconfig.
-            var editorSettings = _optionsMonitor.EditorSettings;
+            var editorSettings = _optionsMonitor.TryGetCurrentOptionsForDocument(document.FilePath);
             return Task.FromResult<IRazorDocumentOptions>(new RazorDocumentOptions(document, editorSettings));
         }
 

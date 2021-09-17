@@ -9,7 +9,6 @@ using Microsoft.AspNetCore.Razor.Language.Legacy;
 using Microsoft.AspNetCore.Razor.Language.Syntax;
 using Microsoft.AspNetCore.Razor.LanguageServer.Extensions;
 using Microsoft.AspNetCore.Razor.LanguageServer.Formatting;
-using Microsoft.Extensions.Options;
 using OmniSharp.Extensions.LanguageServer.Protocol.Models;
 using Range = OmniSharp.Extensions.LanguageServer.Protocol.Models.Range;
 
@@ -39,9 +38,9 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.AutoInsert
             "wbr"
         };
 
-        private readonly IOptionsMonitor<RazorLSPOptions> _optionsMonitor;
+        private readonly RazorLSPOptionsMonitor _optionsMonitor;
 
-        public AutoClosingTagOnAutoInsertProvider(IOptionsMonitor<RazorLSPOptions> optionsMonitor)
+        public AutoClosingTagOnAutoInsertProvider(RazorLSPOptionsMonitor optionsMonitor)
         {
             if (optionsMonitor is null)
             {
@@ -65,7 +64,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.AutoInsert
                 throw new ArgumentNullException(nameof(context));
             }
 
-            if (!_optionsMonitor.CurrentValue.AutoClosingTags)
+            if (!_optionsMonitor.GetCurrentOptions(context.Uri.Path).AutoClosingTags)
             {
                 format = default;
                 edit = default;

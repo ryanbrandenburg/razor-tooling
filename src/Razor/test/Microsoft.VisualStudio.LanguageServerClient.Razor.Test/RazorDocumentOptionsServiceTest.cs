@@ -26,7 +26,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.Test
             // Arrange
             var editorSettings = new EditorSettings(indentWithTabs: true, indentSize: 4);
             var clientOptionsMonitor = new RazorLSPClientOptionsMonitor();
-            clientOptionsMonitor.UpdateOptions(editorSettings);
+            clientOptionsMonitor.UpdateToolsOptionsSettings(editorSettings);
             var optionsService = new RazorDocumentOptionsService(clientOptionsMonitor);
 
             var document = InitializeDocument(SourceText.From("text"));
@@ -53,7 +53,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.Test
             // Arrange
             var editorSettings = new EditorSettings(indentWithTabs: false, indentSize: 2);
             var clientOptionsMonitor = new RazorLSPClientOptionsMonitor();
-            clientOptionsMonitor.UpdateOptions(editorSettings);
+            clientOptionsMonitor.UpdateToolsOptionsSettings(editorSettings);
             var optionsService = new RazorDocumentOptionsService(clientOptionsMonitor);
 
             var document = InitializeDocument(SourceText.From("text"));

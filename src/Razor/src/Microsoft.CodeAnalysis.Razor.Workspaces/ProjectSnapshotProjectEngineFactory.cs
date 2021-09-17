@@ -57,7 +57,7 @@ namespace Microsoft.CodeAnalysis.Razor
                 throw new ArgumentNullException(nameof(fileSystem));
             }
 
-            return Create(project.Configuration, fileSystem, configure);
+            return Create(project.Configuration, project.FilePath, fileSystem, configure);
         }
 
         public RazorProjectEngine Create(RazorConfiguration configuration, string directoryPath, Action<RazorProjectEngineBuilder> configure)
@@ -72,9 +72,13 @@ namespace Microsoft.CodeAnalysis.Razor
                 throw new ArgumentNullException(nameof(directoryPath));
             }
 
-            return Create(configuration, RazorProjectFileSystem.Create(directoryPath), configure);
+            return Create(configuration, directoryPath, RazorProjectFileSystem.Create(directoryPath), configure);
         }
 
-        public abstract RazorProjectEngine Create(RazorConfiguration configuration, RazorProjectFileSystem fileSystem, Action<RazorProjectEngineBuilder> configure);
+        public abstract RazorProjectEngine Create(
+            RazorConfiguration configuration,
+            string directoryPath,
+            RazorProjectFileSystem fileSystem,
+            Action<RazorProjectEngineBuilder> configure);
     }
 }

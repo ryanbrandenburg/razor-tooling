@@ -11,7 +11,6 @@ using Microsoft.AspNetCore.Razor.Test.Common;
 using Microsoft.CodeAnalysis.Razor;
 using Microsoft.CodeAnalysis.Razor.ProjectSystem;
 using Microsoft.CodeAnalysis.Text;
-using Microsoft.Extensions.Options;
 using Moq;
 using OmniSharp.Extensions.LanguageServer.Protocol;
 using OmniSharp.Extensions.LanguageServer.Protocol.Models;
@@ -110,10 +109,10 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
             Assert.Null(result);
         }
 
-        private static IOptionsMonitor<RazorLSPOptions> GetOptionsMonitor(bool enableFormatting)
+        private static RazorLSPOptionsMonitor GetOptionsMonitor(bool enableFormatting)
         {
-            var monitor = new Mock<IOptionsMonitor<RazorLSPOptions>>(MockBehavior.Strict);
-            monitor.SetupGet(m => m.CurrentValue).Returns(new RazorLSPOptions(default, enableFormatting, true, insertSpaces: true, tabSize: 4));
+            var monitor = new Mock<RazorLSPOptionsMonitor>(MockBehavior.Strict);
+            monitor.SetupGet(m => m.GetCurrentOptions).Returns(new RazorLSPOptions(default, enableFormatting, true, insertSpaces: true, tabSize: 4));
             return monitor.Object;
         }
 

@@ -33,11 +33,11 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             _logger = loggerFactory.CreateLogger<DefaultRazorConfigurationService>();
         }
 
-        public async override Task<RazorLSPOptions> GetLatestOptionsAsync(CancellationToken cancellationToken)
+        public async override Task<RazorLSPOptions> GetLatestOptionsAsync(string filePath, CancellationToken cancellationToken)
         {
             try
             {
-                var request = GenerateConfigParams();
+                var request = GenerateConfigParams(filePath);
 
                 var response = await _server.SendRequestAsync("workspace/configuration", request);
                 var result = await response.Returning<JObject[]>(cancellationToken);
@@ -59,8 +59,10 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             }
         }
 
-        private static ConfigurationParams GenerateConfigParams()
+        private static ConfigurationParams GenerateConfigParams(string filePath)
         {
+            var scopeUri = new Uri(filePath);
+
             // NOTE: Do not change the ordering of sections without updating
             // the code in the BuildOptions method below.
             return new ConfigurationParams()
@@ -69,15 +71,18 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
                 {
                     new ConfigurationItem()
                     {
-                        Section = "razor"
+                        Section = "razor",
+                        ScopeUri = scopeUri
                     },
                     new ConfigurationItem()
                     {
-                        Section = "html"
+                        Section = "html",
+                        ScopeUri = scopeUri
                     },
                     new ConfigurationItem()
                     {
-                        Section = "vs.editor.razor"
+                        Section = "vs.editor.razor",
+                        ScopeUri = scopeUri
                     },
                 }
             };

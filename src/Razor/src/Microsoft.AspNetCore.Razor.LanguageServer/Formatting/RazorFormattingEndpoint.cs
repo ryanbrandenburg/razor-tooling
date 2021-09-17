@@ -13,7 +13,6 @@ using Microsoft.CodeAnalysis.Razor;
 using Microsoft.CodeAnalysis.Razor.Workspaces.Extensions;
 using Microsoft.CodeAnalysis.Text;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 using OmniSharp.Extensions.LanguageServer.Protocol.Client.Capabilities;
 using OmniSharp.Extensions.LanguageServer.Protocol.Document;
 using OmniSharp.Extensions.LanguageServer.Protocol.Models;
@@ -25,14 +24,14 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
         private readonly ProjectSnapshotManagerDispatcher _projectSnapshotManagerDispatcher;
         private readonly DocumentResolver _documentResolver;
         private readonly RazorFormattingService _razorFormattingService;
-        private readonly IOptionsMonitor<RazorLSPOptions> _optionsMonitor;
+        private readonly RazorLSPOptionsMonitor _optionsMonitor;
         private readonly ILogger _logger;
 
         public RazorFormattingEndpoint(
             ProjectSnapshotManagerDispatcher projectSnapshotManagerDispatcher,
             DocumentResolver documentResolver,
             RazorFormattingService razorFormattingService,
-            IOptionsMonitor<RazorLSPOptions> optionsMonitor,
+            RazorLSPOptionsMonitor optionsMonitor,
             ILoggerFactory loggerFactory)
         {
             if (projectSnapshotManagerDispatcher is null)
@@ -85,7 +84,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
 
         public async Task<TextEditContainer?> Handle(DocumentFormattingParams request, CancellationToken cancellationToken)
         {
-            if (!_optionsMonitor.CurrentValue.EnableFormatting)
+            if (!_optionsMonitor.GetCurrentOptions(request.TextDocument.Uri.Path).EnableFormatting)
             {
                 return null;
             }
@@ -119,7 +118,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
 #nullable disable // OmniSharp annotations don't allow a null return, though the spec does
         public async Task<TextEditContainer> Handle(DocumentRangeFormattingParams request, CancellationToken cancellationToken)
         {
-            if (!_optionsMonitor.CurrentValue.EnableFormatting)
+            if (!_optionsMonitor.GetCurrentOptions(request.TextDocument.Uri.Path).EnableFormatting)
             {
                 return null;
             }

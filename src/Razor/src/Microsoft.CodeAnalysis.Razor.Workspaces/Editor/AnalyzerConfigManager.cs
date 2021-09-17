@@ -1,6 +1,8 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the MIT license. See License.txt in the project root for license information.
 
+#nullable enable
+
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -25,10 +27,10 @@ namespace Microsoft.CodeAnalysis.Razor.Workspaces.Editor
             CancellationToken cancellationToken);
 
         /// <summary>
-        /// Retrieves the set of options which should apply to the given file path.
+        /// Retrieves the current analyzer config set for the given workspace. May return null
+        /// if there are no config files or if they have not yet been processed.
         /// </summary>
-        public abstract Task<AnalyzerConfigOptionsResult?> GetOptionsForSourcePathAsync(
-            string filePath,
-            CancellationToken cancellationToken);
+        /// <returns></returns>
+        public abstract AnalyzerConfigSet? GetCurrentAnalyzerConfigSet();
     }
 }

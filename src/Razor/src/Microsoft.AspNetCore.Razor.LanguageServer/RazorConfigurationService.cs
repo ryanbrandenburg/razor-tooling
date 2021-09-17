@@ -8,6 +8,6 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
 {
     internal abstract class RazorConfigurationService
     {
-        public abstract Task<RazorLSPOptions> GetLatestOptionsAsync(CancellationToken cancellationToken);
+        public abstract Task<RazorLSPOptions> GetLatestOptionsAsync(string filePath, CancellationToken cancellationToken);
     }
 }

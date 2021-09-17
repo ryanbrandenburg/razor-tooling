@@ -73,18 +73,7 @@ namespace Microsoft.CodeAnalysis.Razor.Workspaces.Editor
             }
         }
 
-        public override async Task<AnalyzerConfigOptionsResult?> GetOptionsForSourcePathAsync(string filePath, CancellationToken cancellationToken)
-        {
-            await _semaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
-            try
-            {
-                return _currentAnalyzerConfigSet?.GetOptionsForSourcePath(filePath);
-            }
-            finally
-            {
-                _semaphore.Release();
-            }
-        }
+        public override AnalyzerConfigSet? GetCurrentAnalyzerConfigSet() => _currentAnalyzerConfigSet;
 
         private async Task ParseAndSetOptionsAsync(Solution solution, CancellationToken cancellationToken)
         {

@@ -3,7 +3,6 @@
 
 using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.AspNetCore.Razor.Test.Common;
-using Microsoft.Extensions.Options;
 using Moq;
 using Xunit;
 
@@ -498,8 +497,8 @@ expected: @"
 
         internal override RazorOnAutoInsertProvider CreateProvider()
         {
-            var optionsMonitor = new Mock<IOptionsMonitor<RazorLSPOptions>>(MockBehavior.Strict);
-            optionsMonitor.SetupGet(o => o.CurrentValue).Returns(Options);
+            var optionsMonitor = new Mock<RazorLSPOptionsMonitor>(MockBehavior.Strict);
+            optionsMonitor.SetupGet(o => o.GetCurrentOptions).Returns(Options);
 
             var provider = new AutoClosingTagOnAutoInsertProvider(optionsMonitor.Object);
             return provider;

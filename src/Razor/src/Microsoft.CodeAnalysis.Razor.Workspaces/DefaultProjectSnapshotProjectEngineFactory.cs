@@ -32,7 +32,11 @@ namespace Microsoft.CodeAnalysis.Razor
             _factories = factories;
         }
 
-        public override RazorProjectEngine Create(RazorConfiguration configuration, RazorProjectFileSystem fileSystem, Action<RazorProjectEngineBuilder> configure)
+        public override RazorProjectEngine Create(
+            RazorConfiguration configuration,
+            string filePath,
+            RazorProjectFileSystem fileSystem,
+            Action<RazorProjectEngineBuilder> configure)
         {
             if (fileSystem == null)
             {

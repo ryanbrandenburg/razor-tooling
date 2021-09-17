@@ -218,8 +218,19 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
                 return;
             }
 
-            // Retrieve current space/tabs settings from from Tools->Options.
-            var settings = GetRazorEditorOptions(_textManager);
+            if (!_textBuffer.Properties.TryGetProperty(typeof(ITextDocument), out ITextDocument textDocument))
+            {
+                return;
+            }
+
+            var settings = EditorSettings.Default;
+
+            // Check if we have a processed applicable editorconfig.
+            if (!_clientOptionsMonitor.TryGetCurrentOptionsForDocument(textDocument.FilePath, out settings))
+            {
+                // Retrieve current space/tabs settings from from Tools->Options.
+                settings = GetRazorEditorOptions(_textManager);
+            }
 
             // Update settings in the actual editor.
             // We need to update both the TextView and TextBuffer options. Updating the TextView is necessary
@@ -233,7 +244,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
 
             // Keep track of accurate settings on the client side so we can easily retrieve the
             // options later when the server sends us a workspace/configuration request.
-            _clientOptionsMonitor.UpdateOptions(settings);
+            _clientOptionsMonitor.ToolsOptionsSettings = settings;
 
             // Make sure the server updates the settings on their side by sending a
             // workspace/didChangeConfiguration request. This notifies the server that the user's

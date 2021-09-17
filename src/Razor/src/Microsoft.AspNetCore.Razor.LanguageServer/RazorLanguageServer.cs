@@ -28,7 +28,6 @@ using Microsoft.CodeAnalysis.Razor.Workspaces;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 using Microsoft.VisualStudio.Editor.Razor;
 using Newtonsoft.Json.Linq;
 using OmniSharp.Extensions.JsonRpc;
@@ -102,18 +101,6 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
 
                         var fileChangeDetectorManager = s.Services.GetRequiredService<RazorFileChangeDetectorManager>();
                         await fileChangeDetectorManager.InitializedAsync();
-
-                        // Workaround for https://github.com/OmniSharp/csharp-language-server-protocol/issues/106
-                        var languageServer = (OmniSharp.Extensions.LanguageServer.Server.LanguageServer)server;
-                        if (request.Capabilities.Workspace.Configuration.IsSupported)
-                        {
-                            // Initialize our options for the first time.
-                            var optionsMonitor = languageServer.Services.GetRequiredService<RazorLSPOptionsMonitor>();
-
-                            // Explicitly not passing in the same CancellationToken as that might get cancelled before the update happens.
-                            _ = Task.Delay(TimeSpan.FromSeconds(3), CancellationToken.None)
-                                .ContinueWith(async (_) => await optionsMonitor.UpdateAsync(), TaskScheduler.Default);
-                        }
                     })
                     .WithHandler<RazorDocumentSynchronizationEndpoint>()
                     .WithHandler<RazorCompletionEndpoint>()
@@ -167,7 +154,6 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
                         // Options
                         services.AddSingleton<RazorConfigurationService, DefaultRazorConfigurationService>();
                         services.AddSingleton<RazorLSPOptionsMonitor>();
-                        services.AddSingleton<IOptionsMonitor<RazorLSPOptions>, RazorLSPOptionsMonitor>();
 
                         // File change listeners
                         services.AddSingleton<IProjectConfigurationFileChangeListener, ProjectConfigurationStateSynchronizer>();

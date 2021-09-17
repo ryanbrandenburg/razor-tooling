@@ -444,10 +444,12 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
             var result = new List<object>();
             foreach (var item in configParams.Items)
             {
+                Assumes.NotNull(item.ScopeUri);
+
                 // Right now in VS we only care about editor settings, but we should update this logic later if
                 // we want to support Razor and HTML settings as well.
                 var setting = item.Section == "vs.editor.razor"
-                    ? _clientOptionsMonitor.EditorSettings
+                    ? _clientOptionsMonitor.TryGetCurrentOptionsForDocument(item.ScopeUri.Path)
                     : new object();
                 result.Add(setting);
             }

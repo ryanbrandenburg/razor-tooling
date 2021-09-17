@@ -6,7 +6,6 @@ using System.Diagnostics;
 using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.AspNetCore.Razor.LanguageServer.Common;
 using Microsoft.CodeAnalysis.Razor;
-using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Razor.LanguageServer
 {
@@ -15,9 +14,9 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
         public static readonly IFallbackProjectEngineFactory FallbackProjectEngineFactory = new FallbackProjectEngineFactory();
 
         private readonly FilePathNormalizer _filePathNormalizer;
-        private readonly IOptionsMonitor<RazorLSPOptions> _optionsMonitor;
+        private readonly RazorLSPOptionsMonitor _optionsMonitor;
 
-        public RemoteProjectSnapshotProjectEngineFactory(FilePathNormalizer filePathNormalizer, IOptionsMonitor<RazorLSPOptions> optionsMonitor) :
+        public RemoteProjectSnapshotProjectEngineFactory(FilePathNormalizer filePathNormalizer, RazorLSPOptionsMonitor optionsMonitor) :
             base(FallbackProjectEngineFactory, ProjectEngineFactories.Factories)
         {
             if (filePathNormalizer is null)
@@ -36,37 +35,45 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
 
         public override RazorProjectEngine Create(
             RazorConfiguration configuration,
+            string filePath,
             RazorProjectFileSystem fileSystem,
             Action<RazorProjectEngineBuilder> configure)
         {
-            if (!(fileSystem is DefaultRazorProjectFileSystem defaultFileSystem))
+            if (fileSystem is not DefaultRazorProjectFileSystem defaultFileSystem)
             {
                 Debug.Fail("Unexpected file system.");
                 return null;
             }
 
             var remoteFileSystem = new RemoteRazorProjectFileSystem(defaultFileSystem.Root, _filePathNormalizer);
-            return base.Create(configuration, remoteFileSystem, Configure);
+            return base.Create(configuration, filePath, remoteFileSystem, Configure);
 
             void Configure(RazorProjectEngineBuilder builder)
             {
                 configure(builder);
-                builder.Features.Add(new RemoteCodeGenerationOptionsFeature(_optionsMonitor));
+                builder.Features.Add(new RemoteCodeGenerationOptionsFeature(_optionsMonitor, filePath));
             }
         }
 
         private class RemoteCodeGenerationOptionsFeature : RazorEngineFeatureBase, IConfigureRazorCodeGenerationOptionsFeature
         {
-            private readonly IOptionsMonitor<RazorLSPOptions> _optionsMonitor;
+            private readonly RazorLSPOptionsMonitor _optionsMonitor;
+            private readonly string _filePath;
 
-            public RemoteCodeGenerationOptionsFeature(IOptionsMonitor<RazorLSPOptions> optionsMonitor)
+            public RemoteCodeGenerationOptionsFeature(RazorLSPOptionsMonitor optionsMonitor, string filePath)
             {
                 if (optionsMonitor is null)
                 {
                     throw new ArgumentNullException(nameof(optionsMonitor));
                 }
 
+                if (filePath is null)
+                {
+                    throw new ArgumentNullException(nameof(filePath));
+                }
+
                 _optionsMonitor = optionsMonitor;
+                _filePath = filePath;
             }
 
             public int Order { get; set; }
@@ -74,8 +81,8 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             public void Configure(RazorCodeGenerationOptionsBuilder options)
             {
                 // We don't need to explicitly subscribe to options changing because this method will be run on every parse.
-                options.IndentSize = _optionsMonitor.CurrentValue.TabSize;
-                options.IndentWithTabs = !_optionsMonitor.CurrentValue.InsertSpaces;
+                options.IndentSize = _optionsMonitor.GetCurrentOptions(_filePath).TabSize;
+                options.IndentWithTabs = !_optionsMonitor.GetCurrentOptions(_filePath).InsertSpaces;
             }
         }
     }

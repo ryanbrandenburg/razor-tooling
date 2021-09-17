@@ -6,7 +6,6 @@ using System.Collections.Generic;
 using Microsoft.AspNetCore.Razor.LanguageServer.Common;
 using Microsoft.CodeAnalysis.Razor;
 using Microsoft.CodeAnalysis.Razor.ProjectSystem;
-using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Razor.LanguageServer
 {
@@ -15,7 +14,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
         private readonly ProjectSnapshotManagerDispatcher _projectSnapshotManagerDispatcher;
         private readonly IEnumerable<ProjectSnapshotChangeTrigger> _changeTriggers;
         private readonly FilePathNormalizer _filePathNormalizer;
-        private readonly IOptionsMonitor<RazorLSPOptions> _optionsMonitor;
+        private readonly RazorLSPOptionsMonitor _optionsMonitor;
         private readonly AdhocWorkspaceFactory _workspaceFactory;
         private ProjectSnapshotManagerBase _instance;
         private bool _disposed;
@@ -24,7 +23,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             ProjectSnapshotManagerDispatcher projectSnapshotManagerDispatcher,
             IEnumerable<ProjectSnapshotChangeTrigger> changeTriggers,
             FilePathNormalizer filePathNormalizer,
-            IOptionsMonitor<RazorLSPOptions> optionsMonitor,
+            RazorLSPOptionsMonitor optionsMonitor,
             AdhocWorkspaceFactory workspaceFactory)
         {
             if (projectSnapshotManagerDispatcher == null)

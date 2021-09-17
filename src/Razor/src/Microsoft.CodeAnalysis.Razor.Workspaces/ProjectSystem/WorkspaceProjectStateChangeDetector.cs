@@ -284,10 +284,20 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
                     case WorkspaceChangeKind.AnalyzerConfigDocumentAdded:
                     case WorkspaceChangeKind.AnalyzerConfigDocumentChanged:
                     case WorkspaceChangeKind.AnalyzerConfigDocumentReloaded:
+                        if (e.DocumentId is null)
+                        {
+                            return;
+                        }
+
                         await _analyzerConfigManager.AddOrUpdateAnalyzerConfigDocumentAsync(
                             e.DocumentId, e.NewSolution, CancellationToken.None).ConfigureAwait(false);
                         break;
                     case WorkspaceChangeKind.AnalyzerConfigDocumentRemoved:
+                        if (e.DocumentId is null)
+                        {
+                            return;
+                        }
+
                         await _analyzerConfigManager.RemoveAnalyzerConfigDocumentAsync(
                             e.DocumentId, e.OldSolution, CancellationToken.None).ConfigureAwait(false);
                         break;

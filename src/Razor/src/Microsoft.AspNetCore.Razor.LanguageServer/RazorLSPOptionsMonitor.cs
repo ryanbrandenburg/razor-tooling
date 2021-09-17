@@ -4,81 +4,43 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Options;
+using Microsoft.CodeAnalysis.Razor;
 
 namespace Microsoft.AspNetCore.Razor.LanguageServer
 {
-    internal class RazorLSPOptionsMonitor : IOptionsMonitor<RazorLSPOptions>
+    internal class RazorLSPOptionsMonitor
     {
         private readonly RazorConfigurationService _configurationService;
-        private readonly IOptionsMonitorCache<RazorLSPOptions> _cache;
-        private event Action<RazorLSPOptions, string> OnChangeEvent;
-        private RazorLSPOptions _currentValue;
+        private readonly MemoryCache<string, RazorLSPOptions> _filePathToOptionsCache = new();
 
-        public RazorLSPOptionsMonitor(RazorConfigurationService configurationService, IOptionsMonitorCache<RazorLSPOptions> cache)
+        public RazorLSPOptionsMonitor(RazorConfigurationService configurationService)
         {
             if (configurationService is null)
             {
                 throw new ArgumentNullException(nameof(configurationService));
             }
 
-            if (cache is null)
-            {
-                throw new ArgumentNullException(nameof(cache));
-            }
-
             _configurationService = configurationService;
-            _cache = cache;
-            _currentValue = RazorLSPOptions.Default;
         }
 
-        public RazorLSPOptions CurrentValue => Get(Options.DefaultName);
-
-        public RazorLSPOptions Get(string name)
+        public RazorLSPOptions GetCurrentOptions(string filePath)
         {
-            name ??= Options.DefaultName;
-            return _cache.GetOrAdd(name, () => _currentValue);
-        }
-
-        public IDisposable OnChange(Action<RazorLSPOptions, string> listener)
-        {
-            var disposable = new ChangeTrackerDisposable(this, listener);
-            OnChangeEvent += disposable.OnChange;
-            return disposable;
-        }
-
-        public virtual async Task UpdateAsync(CancellationToken cancellationToken = default)
-        {
-            var latestOptions = await _configurationService.GetLatestOptionsAsync(cancellationToken);
-            if (latestOptions != null)
+            if (_filePathToOptionsCache.TryGetValue(filePath, out var options))
             {
-                _currentValue = latestOptions;
-                InvokeChanged();
-            }
-        }
-
-        private void InvokeChanged()
-        {
-            var name = Options.DefaultName;
-            _cache.TryRemove(name);
-            var options = Get(name);
-            OnChangeEvent?.Invoke(options, name);
-        }
-
-        internal class ChangeTrackerDisposable : IDisposable
-        {
-            private readonly Action<RazorLSPOptions, string> _listener;
-            private readonly RazorLSPOptionsMonitor _monitor;
-
-            public ChangeTrackerDisposable(RazorLSPOptionsMonitor monitor, Action<RazorLSPOptions, string> listener)
-            {
-                _listener = listener;
-                _monitor = monitor;
+                return options;
             }
 
-            public void OnChange(RazorLSPOptions options, string name) => _listener.Invoke(options, name);
+            // TO-DO: Recompute if options aren't found
+            return RazorLSPOptions.Default;
+        }
 
-            public void Dispose() => _monitor.OnChangeEvent -= OnChange;
+        public virtual async Task UpdateAsync(string filePath, CancellationToken cancellationToken = default)
+        {
+            var latestOptions = await _configurationService.GetLatestOptionsAsync(filePath, cancellationToken);
+            if (latestOptions is not null)
+            {
+                _filePathToOptionsCache.Set(filePath, latestOptions);
+            }
         }
     }
 }
