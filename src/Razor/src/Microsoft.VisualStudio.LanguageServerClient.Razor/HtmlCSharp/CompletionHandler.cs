@@ -201,6 +201,8 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
 
                 _logger.LogInformation($"Requesting non-provisional completions for {projectedDocumentUri}.");
 
+                await Task.Delay(1).ConfigureAwait(false);
+
                 var response = await _requestInvoker.ReinvokeRequestOnServerAsync<CompletionParams, SumType<CompletionItem[], CompletionList>?>(
                     Methods.TextDocumentCompletionName,
                     languageServerName,
@@ -465,6 +467,8 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             if (context.TriggerKind != CompletionTriggerKind.TriggerCharacter)
             {
                 // Non-triggered based completion, the existing context is valid;
+
+                (context as VSInternalCompletionContext).InvokeKind = (context as VSInternalCompletionContext).InvokeKind == VSInternalCompletionInvokeKind.Typing ? VSInternalCompletionInvokeKind.Explicit : (context as VSInternalCompletionContext).InvokeKind;
                 return context;
             }
 
