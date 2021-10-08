@@ -138,6 +138,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
 
             _logger.LogInformation($"Requesting references for {projectionResult.Uri}.");
 
+            // TODO: Make IProgress<T> support work on new reinvocation pipeline.
             var response = await _requestInvoker.ReinvokeRequestOnServerAsync<SerializableReferenceParams, VSInternalReferenceItem[]>(
                 Methods.TextDocumentReferencesName,
                 projectionResult.LanguageKind.ToContainedLanguageServerName(),

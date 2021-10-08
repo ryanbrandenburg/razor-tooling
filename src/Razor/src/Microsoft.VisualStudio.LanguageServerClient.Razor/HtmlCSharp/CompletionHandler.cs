@@ -12,6 +12,7 @@ using Microsoft.VisualStudio.LanguageServer.ContainedLanguage;
 using Microsoft.VisualStudio.LanguageServer.Protocol;
 using Microsoft.VisualStudio.LanguageServerClient.Razor.Extensions;
 using Microsoft.VisualStudio.LanguageServerClient.Razor.Logging;
+using Microsoft.VisualStudio.Text;
 using Microsoft.VisualStudio.Text.Operations;
 using Microsoft.VisualStudio.Threading;
 
@@ -201,9 +202,9 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
 
                 _logger.LogInformation($"Requesting non-provisional completions for {projectedDocumentUri}.");
 
-                await Task.Delay(1).ConfigureAwait(false);
-
+                var textBuffer = serverKind.GetTextBuffer(documentSnapshot);
                 var response = await _requestInvoker.ReinvokeRequestOnServerAsync<CompletionParams, SumType<CompletionItem[], CompletionList>?>(
+                    textBuffer,
                     Methods.TextDocumentCompletionName,
                     languageServerName,
                     completionParams,

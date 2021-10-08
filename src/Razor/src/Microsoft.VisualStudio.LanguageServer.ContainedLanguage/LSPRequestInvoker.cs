@@ -5,6 +5,8 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.VisualStudio.LanguageServer.Protocol;
+using Microsoft.VisualStudio.Text;
 using Newtonsoft.Json.Linq;
 
 namespace Microsoft.VisualStudio.LanguageServer.ContainedLanguage
@@ -24,6 +26,21 @@ namespace Microsoft.VisualStudio.LanguageServer.ContainedLanguage
             TIn parameters,
             CancellationToken cancellationToken);
 
+        public abstract Task<ReinvokeResponse2<TOut>> ReinvokeRequestOnServerAsync<TIn, TOut>(
+            ITextBuffer textBuffer,
+            string method,
+            string languageServerName,
+            TIn parameters,
+            CancellationToken cancellationToken);
+
+        public abstract Task<ReinvokeResponse2<TOut>> ReinvokeRequestOnServerAsync<TIn, TOut>(
+            ITextBuffer textBuffer,
+            string method,
+            string languageServerName,
+            Func<JToken, bool> capabilitiesFilter,
+            TIn parameters,
+            CancellationToken cancellationToken);
+
         public abstract Task<IEnumerable<ReinvokeResponse<TOut>>> ReinvokeRequestOnMultipleServersAsync<TIn, TOut>(
             string method,
             string contentType,
@@ -33,6 +50,19 @@ namespace Microsoft.VisualStudio.LanguageServer.ContainedLanguage
         public abstract Task<IEnumerable<ReinvokeResponse<TOut>>> ReinvokeRequestOnMultipleServersAsync<TIn, TOut>(
             string method,
             string contentType,
+            Func<JToken, bool> capabilitiesFilter,
+            TIn parameters,
+            CancellationToken cancellationToken);
+
+        public abstract Task<IEnumerable<ReinvokeResponse2<TOut>>> ReinvokeRequestOnMultipleServersAsync<TIn, TOut>(
+            ITextBuffer textBuffer,
+            string method,
+            TIn parameters,
+            CancellationToken cancellationToken);
+
+        public abstract Task<IEnumerable<ReinvokeResponse2<TOut>>> ReinvokeRequestOnMultipleServersAsync<TIn, TOut>(
+            ITextBuffer textBuffer,
+            string method,
             Func<JToken, bool> capabilitiesFilter,
             TIn parameters,
             CancellationToken cancellationToken);

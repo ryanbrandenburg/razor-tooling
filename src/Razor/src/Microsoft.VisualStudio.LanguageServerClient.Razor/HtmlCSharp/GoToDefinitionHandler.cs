@@ -106,9 +106,12 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
 
             _logger.LogInformation($"Requesting GoToDef for {projectionResult.Uri}.");
 
+            var serverKind = projectionResult.LanguageKind.ToLanguageServerKind();
+            var textBuffer = serverKind.GetTextBuffer(documentSnapshot);
             var response = await _requestInvoker.ReinvokeRequestOnServerAsync<TextDocumentPositionParams, Location[]>(
+                textBuffer,
                 Methods.TextDocumentDefinitionName,
-                projectionResult.LanguageKind.ToContainedLanguageServerName(),
+                serverKind.ToLanguageServerName(),
                 textDocumentPositionParams,
                 cancellationToken).ConfigureAwait(false);
             var locations = response.Result;

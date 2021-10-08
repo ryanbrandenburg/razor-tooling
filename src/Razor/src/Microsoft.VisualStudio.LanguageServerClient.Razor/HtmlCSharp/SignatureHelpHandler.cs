@@ -93,9 +93,13 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
 
             _logger.LogInformation($"Requesting signature help for {projectionResult.Uri}.");
 
+            var serverKind = projectionResult.LanguageKind.ToLanguageServerKind();
+            var textBuffer = serverKind.GetTextBuffer(documentSnapshot);
+            var languageServerName = serverKind.ToLanguageServerName();
             var response = await _requestInvoker.ReinvokeRequestOnServerAsync<TextDocumentPositionParams, SignatureHelp>(
+                textBuffer,
                 Methods.TextDocumentSignatureHelpName,
-                projectionResult.LanguageKind.ToContainedLanguageServerName(),
+                languageServerName,
                 textDocumentPositionParams,
                 cancellationToken).ConfigureAwait(false);
             var signatureHelp = response.Result;

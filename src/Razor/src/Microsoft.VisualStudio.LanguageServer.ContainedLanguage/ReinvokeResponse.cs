@@ -23,4 +23,20 @@ namespace Microsoft.VisualStudio.LanguageServer.ContainedLanguage
             Result = result;
         }
     }
+    internal struct ReinvokeResponse2<TOut>
+    {
+        public string LanguageClientName { get; }
+
+        public TOut Result { get; }
+
+        public bool IsSuccess => LanguageClientName != default;
+
+        public ReinvokeResponse2(
+            string languageClientName,
+            TOut result)
+        {
+            LanguageClientName = languageClientName;
+            Result = result;
+        }
+    }
 }

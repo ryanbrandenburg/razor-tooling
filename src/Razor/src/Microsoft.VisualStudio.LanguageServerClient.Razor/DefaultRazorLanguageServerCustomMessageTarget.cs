@@ -209,7 +209,9 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
                 Options = request.Options
             };
 
+            var textBuffer = htmlDocument.Snapshot.TextBuffer;
             var edits = await _requestInvoker.ReinvokeRequestOnServerAsync<DocumentFormattingParams, TextEdit[]>(
+                textBuffer,
                 Methods.TextDocumentFormattingName,
                 languageServerName,
                 formattingParams,
@@ -258,7 +260,9 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
                 Options = request.Options
             };
 
+            var textBuffer = csharpDocument.Snapshot.TextBuffer;
             var edits = await _requestInvoker.ReinvokeRequestOnServerAsync<DocumentRangeFormattingParams, TextEdit[]>(
+                textBuffer,
                 Methods.TextDocumentRangeFormattingName,
                 languageServerName,
                 formattingParams,
@@ -288,9 +292,10 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
 
             codeActionParams.TextDocument.Uri = csharpDoc.Uri;
 
+            var textBuffer = csharpDoc.Snapshot.TextBuffer;
             var results = await _requestInvoker.ReinvokeRequestOnMultipleServersAsync<CodeActionParams, VSInternalCodeAction[]>(
+                textBuffer,
                 Methods.TextDocumentCodeActionName,
-                LanguageServerKind.CSharp.ToContentType(),
                 SupportsCSharpCodeActions,
                 codeActionParams,
                 cancellationToken).ConfigureAwait(false);
@@ -305,6 +310,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
                 throw new ArgumentNullException(nameof(codeAction));
             }
 
+            // TODO: Capture what document is assocaited with this resolve request so we can move to new APIs
             var results = await _requestInvoker.ReinvokeRequestOnMultipleServersAsync<VSInternalCodeAction, VSInternalCodeAction>(
                 Methods.CodeActionResolveName,
                 LanguageServerKind.CSharp.ToContentType(),
@@ -350,7 +356,9 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
                 PartialResultToken = semanticTokensParams.PartialResultToken,
             };
 
+            var textBuffer = csharpDoc.Snapshot.TextBuffer;
             var csharpResults = await _requestInvoker.ReinvokeRequestOnServerAsync<SemanticTokensParams, VSSemanticTokensResponse>(
+                textBuffer,
                 Methods.TextDocumentSemanticTokensFullName,
                 RazorLSPConstants.RazorCSharpLanguageServerName,
                 newParams,
@@ -397,7 +405,9 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
                 PreviousResultId = semanticTokensEditsParams.PreviousResultId,
             };
 
+            var textBuffer = csharpDoc.Snapshot.TextBuffer;
             var csharpResponse = await _requestInvoker.ReinvokeRequestOnServerAsync<SemanticTokensDeltaParams, SumType<VSSemanticTokensResponse, VSSemanticTokensDeltaResponse>>(
+                textBuffer,
                 Methods.TextDocumentSemanticTokensFullDeltaName,
                 RazorLSPConstants.RazorCSharpLanguageServerName,
                 newParams,
