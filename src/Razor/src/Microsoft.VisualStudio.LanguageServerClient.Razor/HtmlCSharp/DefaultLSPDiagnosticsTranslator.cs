@@ -15,16 +15,25 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
     [Export(typeof(LSPDiagnosticsTranslator))]
     internal class DefaultLSPDiagnosticsTranslator : LSPDiagnosticsTranslator
     {
+        private readonly LSPDocumentManager _documentManager;
         private readonly LSPRequestInvoker _requestInvoker;
 
         [ImportingConstructor]
-        public DefaultLSPDiagnosticsTranslator(LSPRequestInvoker requestInvoker)
+        public DefaultLSPDiagnosticsTranslator(
+            LSPDocumentManager documentManager,
+            LSPRequestInvoker requestInvoker)
         {
+            if (documentManager is null)
+            {
+                throw new ArgumentNullException(nameof(documentManager));
+            }
+
             if (requestInvoker is null)
             {
                 throw new ArgumentNullException(nameof(requestInvoker));
             }
 
+            _documentManager = documentManager;
             _requestInvoker = requestInvoker;
         }
 
@@ -44,6 +53,14 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
                 throw new ArgumentNullException(nameof(diagnostics));
             }
 
+            if (!_documentManager.TryGetDocument(razorDocumentUri, out var documentSnapshot))
+            {
+                return new RazorDiagnosticsResponse()
+                {
+                    Diagnostics = Array.Empty<Diagnostic>(),
+                };
+            }
+
             var diagnosticsParams = new RazorDiagnosticsParams()
             {
                 Kind = languageKind,
@@ -52,6 +69,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             };
 
             var diagnosticResponse = await _requestInvoker.ReinvokeRequestOnServerAsync<RazorDiagnosticsParams, RazorDiagnosticsResponse>(
+                documentSnapshot.Snapshot.TextBuffer,
                 LanguageServerConstants.RazorTranslateDiagnosticsEndpoint,
                 RazorLSPConstants.RazorLanguageServerName,
                 diagnosticsParams,

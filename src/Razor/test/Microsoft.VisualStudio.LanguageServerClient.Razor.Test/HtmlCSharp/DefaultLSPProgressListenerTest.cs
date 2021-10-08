@@ -92,7 +92,8 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             // Act 1
             var listenerAdded = lspProgressListener.TryListenForProgress(
                 token,
-                onProgressNotifyAsync: (value, ct) => {
+                onProgressNotifyAsync: (value, ct) =>
+                {
                     onProgressNotifyAsyncCalled = true;
                     return Task.CompletedTask;
                 },
@@ -128,7 +129,8 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             // Act
             var listenerAdded = lspProgressListener.TryListenForProgress(
                 token,
-                onProgressNotifyAsync: (value, ct) => {
+                onProgressNotifyAsync: (value, ct) =>
+                {
                     onProgressNotifyAsyncCalled = true;
                     return Task.CompletedTask;
                 },

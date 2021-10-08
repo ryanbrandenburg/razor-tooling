@@ -74,7 +74,13 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
                 MappingBehavior = mappingBehavior,
             };
 
+            if (!_lazyDocumentManager.Value.TryGetDocument(razorDocumentUri, out var documentSnapshot))
+            {
+                return null;
+            }
+
             var documentMappingResponse = await _requestInvoker.ReinvokeRequestOnServerAsync<RazorMapToDocumentRangesParams, RazorMapToDocumentRangesResponse>(
+                documentSnapshot.Snapshot.TextBuffer,
                 LanguageServerConstants.RazorMapToDocumentRangesEndpoint,
                 RazorLSPConstants.RazorLanguageServerName,
                 CheckRazorRangeMappingCapability,
@@ -345,7 +351,13 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
                 FormattingOptions = formattingOptions
             };
 
+            if (!_lazyDocumentManager.Value.TryGetDocument(razorDocumentUri, out var documentSnapshot))
+            {
+                return (null, s_emptyEdits);
+            }
+
             var response = await _requestInvoker.ReinvokeRequestOnServerAsync<RazorMapToDocumentEditsParams, RazorMapToDocumentEditsResponse>(
+                documentSnapshot.Snapshot.TextBuffer,
                 LanguageServerConstants.RazorMapToDocumentEditsEndpoint,
                 RazorLSPConstants.RazorLanguageServerName,
                 CheckRazorEditMappingCapability,
@@ -354,7 +366,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             var mappingResult = response.Result;
 
             if (mappingResult is null ||
-                (_lazyDocumentManager.Value.TryGetDocument(razorDocumentUri, out var documentSnapshot) &&
+                (_lazyDocumentManager.Value.TryGetDocument(razorDocumentUri, out documentSnapshot) &&
                     mappingResult.HostDocumentVersion != documentSnapshot.Version))
             {
                 // Couldn't remap the location or the document changed in the meantime. Discard these ranges.

@@ -5,10 +5,12 @@ using System;
 using System.Collections.Generic;
 using System.Composition;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.VisualStudio.LanguageServer.Client;
 using Microsoft.VisualStudio.LanguageServer.Protocol;
+using Microsoft.VisualStudio.Text;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
@@ -96,6 +98,34 @@ namespace Microsoft.VisualStudio.LanguageServer.ContainedLanguage
             return result;
         }
 
+        public override Task<ReinvokeResponse<TOut>> ReinvokeRequestOnServerAsync<TIn, TOut>(ITextBuffer textBuffer, string method, string languageServerName, TIn parameters, CancellationToken cancellationToken)
+        {
+            var capabilitiesFilter = _fallbackCapabilitiesFilterResolver.Resolve(method);
+            return ReinvokeRequestOnServerAsync<TIn, TOut>(textBuffer, method, languageServerName, capabilitiesFilter, parameters, cancellationToken);
+        }
+
+        public override async Task<ReinvokeResponse<TOut>> ReinvokeRequestOnServerAsync<TIn, TOut>(
+            ITextBuffer textBuffer,
+            string method,
+            string languageServerName,
+            Func<JToken, bool> capabilitiesFilter,
+            TIn parameters,
+            CancellationToken cancellationToken)
+        {
+            var serializedParams = JToken.FromObject(parameters);
+
+            var (languageClientName, resultToken) = await _languageServiceBroker.RequestAsync(
+                textBuffer,
+                capabilitiesFilter,
+                languageServerName,
+                method,
+                serializedParams,
+                cancellationToken);
+
+            var result = resultToken != null ? new ReinvokeResponse<TOut>(languageClientName, resultToken.ToObject<TOut>(_serializer)) : default;
+            return result;
+        }
+
         private async Task<IEnumerable<ReinvokeResponse<TOut>>> RequestMultipleServerCoreAsync<TIn, TOut>(string method, string contentType, Func<JToken, bool> capabilitiesFilter, TIn parameters, CancellationToken cancellationToken)
         {
             if (string.IsNullOrEmpty(method))
@@ -117,6 +147,31 @@ namespace Microsoft.VisualStudio.LanguageServer.ContainedLanguage
             // a little ugly - tuple deconstruction in lambda arguments doesn't work - https://github.com/dotnet/csharplang/issues/258
             var results = clientAndResultTokenPairs.Select((clientAndResultToken) => clientAndResultToken.Item2 != null ? new ReinvokeResponse<TOut>(clientAndResultToken.Item1, clientAndResultToken.Item2.ToObject<TOut>(_serializer)) : default);
 
+            return results;
+        }
+
+        public override Task<IEnumerable<ReinvokeResponse<TOut>>> ReinvokeRequestOnMultipleServersAsync<TIn, TOut>(ITextBuffer textBuffer, string method, TIn parameters, CancellationToken cancellationToken)
+        {
+            var capabilitiesFilter = _fallbackCapabilitiesFilterResolver.Resolve(method);
+            return ReinvokeRequestOnMultipleServersAsync<TIn, TOut>(textBuffer, method, capabilitiesFilter, parameters, cancellationToken);
+        }
+
+        public override async Task<IEnumerable<ReinvokeResponse<TOut>>> ReinvokeRequestOnMultipleServersAsync<TIn, TOut>(
+            ITextBuffer textBuffer,
+            string method,
+            Func<JToken, bool> capabilitiesFilter,
+            TIn parameters,
+            CancellationToken cancellationToken)
+        {
+            var serializedParams = JToken.FromObject(parameters);
+            var clientAndResultTokenPairs = await _languageServiceBroker.RequestMultipleAsync(
+                textBuffer,
+                capabilitiesFilter,
+                method,
+                serializedParams,
+                cancellationToken);
+
+            var results = clientAndResultTokenPairs.Select((clientAndResultToken) => clientAndResultToken.Item2 != null ? new ReinvokeResponse<TOut>(clientAndResultToken.LangaugeClientName, clientAndResultToken.Response.ToObject<TOut>(_serializer)) : default);
             return results;
         }
     }

@@ -12,6 +12,7 @@ using Microsoft.VisualStudio.LanguageServer.ContainedLanguage;
 using Microsoft.VisualStudio.LanguageServer.Protocol;
 using Microsoft.VisualStudio.LanguageServerClient.Razor.Extensions;
 using Microsoft.VisualStudio.LanguageServerClient.Razor.Logging;
+using Microsoft.VisualStudio.Text;
 using Microsoft.VisualStudio.Text.Operations;
 using Microsoft.VisualStudio.Threading;
 
@@ -201,7 +202,9 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
 
                 _logger.LogInformation($"Requesting non-provisional completions for {projectedDocumentUri}.");
 
+                var textBuffer = serverKind.GetTextBuffer(documentSnapshot);
                 var response = await _requestInvoker.ReinvokeRequestOnServerAsync<CompletionParams, SumType<CompletionItem[], CompletionList>?>(
+                    textBuffer,
                     Methods.TextDocumentCompletionName,
                     languageServerName,
                     completionParams,
@@ -465,6 +468,12 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             if (context.TriggerKind != CompletionTriggerKind.TriggerCharacter)
             {
                 // Non-triggered based completion, the existing context is valid;
+
+                if (context is VSInternalCompletionContext internalContext && internalContext.InvokeKind == VSInternalCompletionInvokeKind.Typing)
+                {
+                    internalContext.InvokeKind = VSInternalCompletionInvokeKind.Explicit;
+                }
+                
                 return context;
             }
 
@@ -570,7 +579,9 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
 
             _logger.LogInformation($"Requesting provisional completion for {previousCharacterProjection.Uri}.");
 
+            var textBuffer = LanguageServerKind.CSharp.GetTextBuffer(documentSnapshot);
             var response = await _requestInvoker.ReinvokeRequestOnServerAsync<CompletionParams, SumType<CompletionItem[], CompletionList>?>(
+                textBuffer,
                 Methods.TextDocumentCompletionName,
                 RazorLSPConstants.RazorCSharpLanguageServerName,
                 provisionalCompletionParams,

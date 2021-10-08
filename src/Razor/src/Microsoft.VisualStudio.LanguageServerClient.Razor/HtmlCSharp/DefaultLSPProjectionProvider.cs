@@ -83,6 +83,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             };
 
             var response = await _requestInvoker.ReinvokeRequestOnServerAsync<RazorLanguageQueryParams, RazorLanguageQueryResponse>(
+                documentSnapshot.Snapshot.TextBuffer,
                 LanguageServerConstants.RazorLanguageQueryEndpoint,
                 RazorLSPConstants.RazorLanguageServerName,
                 CheckRazorLanguageQueryCapability,

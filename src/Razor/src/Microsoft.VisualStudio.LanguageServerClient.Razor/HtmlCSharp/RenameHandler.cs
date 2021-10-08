@@ -107,9 +107,13 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
 
             _logger.LogInformation($"Requesting rename for {projectionResult.Uri}.");
 
+            var serverKind = projectionResult.LanguageKind.ToLanguageServerKind();
+            var textBuffer = serverKind.GetTextBuffer(documentSnapshot);
+            var languageServerName = serverKind.ToLanguageServerName();
             var response = await _requestInvoker.ReinvokeRequestOnServerAsync<RenameParams, WorkspaceEdit>(
+                textBuffer,
                 Methods.TextDocumentRenameName,
-                projectionResult.LanguageKind.ToContainedLanguageServerName(),
+                languageServerName,
                 renameParams,
                 cancellationToken).ConfigureAwait(false);
             var result = response.Result;
