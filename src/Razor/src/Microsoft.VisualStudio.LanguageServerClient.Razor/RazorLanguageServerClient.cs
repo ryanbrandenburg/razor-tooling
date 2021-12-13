@@ -28,7 +28,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
 {
     [Export(typeof(ILanguageClient))]
     [ContentType(RazorLSPConstants.RazorLSPContentTypeName)]
-    internal class RazorLanguageServerClient : ILanguageClient, ILanguageClientCustomMessage2, ILanguageClientPriority
+    internal class RazorLanguageServerClient : ILanguageClient, ILanguageClientCustomMessage2, ILanguageClientPriority, IAddressableLanguageClient
     {
         private const string LogFileIdentifier = "Razor.RazorLanguageServerClient";
 
@@ -102,6 +102,8 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
         }
 
         public string Name => RazorLSPConstants.RazorLanguageServerName;
+
+        public string IdentifiableName => RazorLSPConstants.RazorLanguageServerIdentifier;
 
         public IEnumerable<string>? ConfigurationSections => null;
 
@@ -283,7 +285,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
 
                 await _requestInvoker.ReinvokeRequestOnServerAsync<MonitorProjectConfigurationFilePathParams, object>(
                     LanguageServerConstants.RazorMonitorProjectConfigurationFilePathEndpoint,
-                    RazorLSPConstants.RazorLanguageServerName,
+                    RazorLSPConstants.RazorLanguageServerIdentifier,
                     parameter,
                     CancellationToken.None);
             }

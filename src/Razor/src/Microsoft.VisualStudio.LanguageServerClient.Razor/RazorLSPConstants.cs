@@ -15,6 +15,8 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
 
         public const string RazorLanguageServerName = "Razor Language Server Client";
 
+        public const string RazorLanguageServerIdentifier = "RazorLanguageServerClient";
+
         public const string HtmlLanguageServerName = "HtmlDelegationLanguageServerClient";
 
         public const string CSHTMLFileExtension = ".cshtml";

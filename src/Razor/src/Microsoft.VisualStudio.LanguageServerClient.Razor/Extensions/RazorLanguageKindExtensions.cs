@@ -19,7 +19,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.Extensions
             {
                 RazorLanguageKind.CSharp => RazorLSPConstants.RazorCSharpLanguageServerName,
                 RazorLanguageKind.Html => RazorLSPConstants.HtmlLanguageServerName,
-                RazorLanguageKind.Razor => RazorLSPConstants.RazorLanguageServerName,
+                RazorLanguageKind.Razor => RazorLSPConstants.RazorLanguageServerIdentifier,
                 _ => throw new NotImplementedException("A RazorLanguageKind did not have a corresponding ClientName"),
             };
         }

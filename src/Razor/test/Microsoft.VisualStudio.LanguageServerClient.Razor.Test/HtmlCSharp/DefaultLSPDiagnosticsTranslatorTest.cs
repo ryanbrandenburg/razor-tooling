@@ -30,7 +30,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             requestInvoker.Setup(ri => ri.ReinvokeRequestOnServerAsync<RazorDiagnosticsParams, RazorDiagnosticsResponse>(
                 It.IsAny<ITextBuffer>(),
                 LanguageServerConstants.RazorTranslateDiagnosticsEndpoint,
-                RazorLSPConstants.RazorLanguageServerName,
+                RazorLSPConstants.RazorLanguageServerIdentifier,
                 It.IsAny<RazorDiagnosticsParams>(),
                 It.IsAny<CancellationToken>()))
                 .Returns(Task.FromResult(new ReinvocationResponse<RazorDiagnosticsResponse>("TestLanguageClient", response)));

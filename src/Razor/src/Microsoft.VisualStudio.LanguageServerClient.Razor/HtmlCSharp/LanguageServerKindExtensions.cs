@@ -17,7 +17,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             {
                 LanguageServerKind.CSharp => RazorLSPConstants.RazorCSharpLanguageServerName,
                 LanguageServerKind.Html => RazorLSPConstants.HtmlLanguageServerName,
-                LanguageServerKind.Razor => RazorLSPConstants.RazorLanguageServerName,
+                LanguageServerKind.Razor => RazorLSPConstants.RazorLanguageServerIdentifier,
                 _ => throw new System.NotImplementedException(),
             };
         }

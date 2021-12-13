@@ -66,7 +66,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
                 .Setup(r => r.ReinvokeRequestOnServerAsync<RazorMapToDocumentRangesParams, RazorMapToDocumentRangesResponse>(
                     It.IsAny<ITextBuffer>(),
                     LanguageServerConstants.RazorMapToDocumentRangesEndpoint,
-                    RazorLSPConstants.RazorLanguageServerName,
+                    RazorLSPConstants.RazorLanguageServerIdentifier,
                     It.IsAny<Func<JToken, bool>>(),
                     It.IsAny<RazorMapToDocumentRangesParams>(),
                     It.IsAny<CancellationToken>()))
@@ -246,7 +246,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
                     .Setup(r => r.ReinvokeRequestOnServerAsync<RazorMapToDocumentEditsParams, RazorMapToDocumentEditsResponse>(
                         It.IsAny<ITextBuffer>(),
                         LanguageServerConstants.RazorMapToDocumentEditsEndpoint,
-                        RazorLSPConstants.RazorLanguageServerName,
+                        RazorLSPConstants.RazorLanguageServerIdentifier,
                         It.IsAny<Func<JToken, bool>>(), requestParams,
                         It.IsAny<CancellationToken>()))
                     .Returns(Task.FromResult(new ReinvocationResponse<RazorMapToDocumentEditsResponse>("TestLanguageClient", response)));

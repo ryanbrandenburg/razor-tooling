@@ -238,7 +238,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
             // updates. Once they do, we can get rid of this extra logic.
             _ = _requestInvoker.ReinvokeRequestOnServerAsync<DidChangeConfigurationParams, Unit>(
                 Methods.WorkspaceDidChangeConfigurationName,
-                RazorLSPConstants.RazorLanguageServerName,
+                RazorLSPConstants.RazorLanguageServerIdentifier,
                 CheckRazorServerCapability,
                 new DidChangeConfigurationParams(),
                 CancellationToken.None);

@@ -83,7 +83,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             var documentMappingResponse = await _requestInvoker.ReinvokeRequestOnServerAsync<RazorMapToDocumentRangesParams, RazorMapToDocumentRangesResponse>(
                 documentSnapshot.Snapshot.TextBuffer,
                 LanguageServerConstants.RazorMapToDocumentRangesEndpoint,
-                RazorLSPConstants.RazorLanguageServerName,
+                RazorLSPConstants.RazorLanguageServerIdentifier,
                 CheckRazorRangeMappingCapability,
                 mapToDocumentRangeParams,
                 cancellationToken).ConfigureAwait(false);
@@ -359,7 +359,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             var response = await _requestInvoker.ReinvokeRequestOnServerAsync<RazorMapToDocumentEditsParams, RazorMapToDocumentEditsResponse>(
                 documentSnapshot.Snapshot.TextBuffer,
                 LanguageServerConstants.RazorMapToDocumentEditsEndpoint,
-                RazorLSPConstants.RazorLanguageServerName,
+                RazorLSPConstants.RazorLanguageServerIdentifier,
                 CheckRazorEditMappingCapability,
                 mapToDocumentEditsParams,
                 cancellationToken).ConfigureAwait(false);

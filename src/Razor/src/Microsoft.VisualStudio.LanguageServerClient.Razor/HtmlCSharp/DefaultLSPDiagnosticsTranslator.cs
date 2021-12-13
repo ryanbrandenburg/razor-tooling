@@ -56,11 +56,11 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             var response = await _requestInvoker.ReinvokeRequestOnServerAsync<RazorDiagnosticsParams, RazorDiagnosticsResponse>(
                 documentSnapshot.Snapshot.TextBuffer,
                 LanguageServerConstants.RazorTranslateDiagnosticsEndpoint,
-                RazorLSPConstants.RazorLanguageServerName,
+                RazorLSPConstants.RazorLanguageServerIdentifier,
                 diagnosticsParams,
                 cancellationToken).ConfigureAwait(false);
 
-            if (!ReinvocationResponseHelper.TryExtractResultOrLog(response, _logger, RazorLSPConstants.RazorLanguageServerName, out var result))
+            if (!ReinvocationResponseHelper.TryExtractResultOrLog(response, _logger, RazorLSPConstants.RazorLanguageServerIdentifier, out var result))
             {
                 return null;
             }
