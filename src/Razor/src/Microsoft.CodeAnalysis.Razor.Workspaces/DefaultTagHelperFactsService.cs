@@ -189,5 +189,24 @@ namespace Microsoft.VisualStudio.Editor.Razor
 
             return (ancestorTagName: null, ancestorIsTagHelper: false);
         }
+
+        internal override IEnumerable<AncestorInfo> GetAncestorInfos(IEnumerable<SyntaxNode> ancestors)
+        {
+            foreach (var ancestor in ancestors)
+            {
+                if (ancestor is MarkupElementSyntax element)
+                {
+                    // It's possible for start tag to be null in malformed cases.
+                    var name = element.StartTag?.Name?.Content ?? string.Empty;
+                    yield return new AncestorInfo(name, AncestorIsTagHelper: false);
+                }
+                else if (ancestor is MarkupTagHelperElementSyntax tagHelperElement)
+                {
+                    // It's possible for start tag to be null in malformed cases.
+                    var name = tagHelperElement.StartTag?.Name?.Content ?? string.Empty;
+                    yield return new AncestorInfo(name, AncestorIsTagHelper: true);
+                }
+            }
+        }
     }
 }

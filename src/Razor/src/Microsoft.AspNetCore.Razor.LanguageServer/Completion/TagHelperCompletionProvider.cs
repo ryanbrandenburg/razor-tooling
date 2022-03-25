@@ -182,15 +182,14 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Completion
             TagHelperDocumentContext tagHelperDocumentContext)
         {
             var ancestors = containingElement.Ancestors();
-            var (ancestorTagName, ancestorIsTagHelper) = _tagHelperFactsService.GetNearestAncestorTagInfo(ancestors);
+            var ancestorInfos = _tagHelperFactsService.GetAncestorInfos(ancestors);
             var elementCompletionContext = new ElementCompletionContext(
                 tagHelperDocumentContext,
                 existingCompletions: Enumerable.Empty<string>(),
                 containingTagName,
                 attributes,
-                ancestorTagName,
-                ancestorIsTagHelper,
-                HtmlFactsService.IsHtmlTagName);
+                HtmlFactsService.IsHtmlTagName,
+                ancestorInfos);
 
             var completionItems = new List<RazorCompletionItem>();
             var completionResult = _tagHelperCompletionService.GetElementCompletions(elementCompletionContext);

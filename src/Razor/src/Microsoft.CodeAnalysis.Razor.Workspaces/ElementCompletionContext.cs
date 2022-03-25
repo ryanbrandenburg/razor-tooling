@@ -3,28 +3,28 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Microsoft.AspNetCore.Razor.Language;
+using static Microsoft.VisualStudio.Editor.Razor.TagHelperFactsService;
 
 namespace Microsoft.VisualStudio.Editor.Razor
 {
     public sealed class ElementCompletionContext
     {
-        public ElementCompletionContext(
+        internal ElementCompletionContext(
             TagHelperDocumentContext documentContext!!,
             IEnumerable<string> existingCompletions!!,
             string containingTagName,
             IEnumerable<KeyValuePair<string, string>> attributes,
-            string? containingParentTagName,
-            bool containingParentIsTagHelper,
-            Func<string, bool> inHTMLSchema!!)
+            Func<string, bool> inHTMLSchema!!,
+            IEnumerable<AncestorInfo> ancestors!!)
         {
             DocumentContext = documentContext;
             ExistingCompletions = existingCompletions;
             ContainingTagName = containingTagName;
             Attributes = attributes;
-            ContainingParentTagName = containingParentTagName;
-            ContainingParentIsTagHelper = containingParentIsTagHelper;
             InHTMLSchema = inHTMLSchema;
+            Ancestors = ancestors;
         }
 
         public TagHelperDocumentContext DocumentContext { get; }
@@ -35,10 +35,18 @@ namespace Microsoft.VisualStudio.Editor.Razor
 
         public IEnumerable<KeyValuePair<string, string>> Attributes { get; }
 
-        public string? ContainingParentTagName { get; }
-
-        public bool ContainingParentIsTagHelper { get; }
-
         public Func<string, bool> InHTMLSchema { get; }
+
+        internal IEnumerable<AncestorInfo> Ancestors { get; }
+
+        public string? ParentTagName => Parent?.AncestorTagName;
+
+        public string? GrandParentTagName => GrandParent?.AncestorTagName;
+
+        public bool? GrandParentIsTagHelper => GrandParent?.AncestorIsTagHelper;
+
+        private AncestorInfo? Parent => Ancestors.FirstOrDefault();
+
+        private AncestorInfo? GrandParent => Ancestors.Count() > 1 ? Ancestors.ElementAt(1) : null;
     }
 }

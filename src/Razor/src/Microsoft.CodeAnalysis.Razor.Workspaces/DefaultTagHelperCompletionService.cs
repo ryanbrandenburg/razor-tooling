@@ -169,7 +169,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
 
             var catchAllDescriptors = new HashSet<TagHelperDescriptor>();
             var prefix = completionContext.DocumentContext.Prefix ?? string.Empty;
-            var possibleChildDescriptors = _tagHelperFactsService.GetTagHelpersGivenParent(completionContext.DocumentContext, completionContext.ContainingParentTagName);
+            var possibleChildDescriptors = _tagHelperFactsService.GetTagHelpersGivenParent(completionContext.DocumentContext, completionContext.ParentTagName);
             possibleChildDescriptors = FilterFullyQualifiedCompletions(possibleChildDescriptors);
             foreach (var possibleDescriptor in possibleChildDescriptors)
             {
@@ -178,7 +178,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
 
                 foreach (var rule in possibleDescriptor.TagMatchingRules)
                 {
-                    if (!TagHelperMatchingConventions.SatisfiesParentTag(completionContext.ContainingParentTagName, rule))
+                    if (!TagHelperMatchingConventions.SatisfiesParentTag(completionContext.ParentTagName, rule))
                     {
                         continue;
                     }
@@ -268,10 +268,10 @@ namespace Microsoft.VisualStudio.Editor.Razor
 
             var binding = _tagHelperFactsService.GetTagHelperBinding(
                 completionContext.DocumentContext,
-                completionContext.ContainingParentTagName,
+                completionContext.ParentTagName,
                 completionContext.Attributes,
-                parentTag: null,
-                parentIsTagHelper: false);
+                parentTag: completionContext.GrandParentTagName,
+                parentIsTagHelper: completionContext.GrandParentIsTagHelper ?? false);
 
             if (binding is null)
             {
@@ -287,7 +287,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
                     var descriptors = _tagHelperFactsService.GetTagHelpersGivenTag(
                         completionContext.DocumentContext,
                         prefixedName,
-                        completionContext.ContainingParentTagName);
+                        completionContext.ParentTagName);
 
                     if (descriptors.Count == 0)
                     {

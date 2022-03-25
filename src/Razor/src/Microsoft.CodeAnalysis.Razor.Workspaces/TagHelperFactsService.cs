@@ -29,5 +29,12 @@ namespace Microsoft.VisualStudio.Editor.Razor
         {
             throw new NotImplementedException();
         }
+
+        internal virtual IEnumerable<AncestorInfo> GetAncestorInfos(IEnumerable<SyntaxNode> ancestors)
+        {
+            throw new NotImplementedException();
+        }
+
+        internal record AncestorInfo(string? AncestorTagName, bool AncestorIsTagHelper);
     }
 }
