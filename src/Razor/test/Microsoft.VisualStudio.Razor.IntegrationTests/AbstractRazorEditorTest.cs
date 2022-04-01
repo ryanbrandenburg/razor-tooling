@@ -1,10 +1,16 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the MIT license. See License.txt in the project root for license information.
 
+using System;
+using System.Collections.Generic;
 using System.IO;
+using System.IO.Compression;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Windows.Documents;
 using Microsoft.CodeAnalysis.Host;
+using Microsoft.Internal.VisualStudio.Shell.Embeddable.Feedback;
+using Microsoft.VisualStudio.ComponentModelHost;
 using Microsoft.VisualStudio.Razor.IntegrationTests.InProcess;
 using Xunit.Harness;
 
@@ -45,10 +51,11 @@ namespace Microsoft.VisualStudio.Razor.IntegrationTests
 ";
 
         private const string RazorOutputLogId = "RazorOutputLog";
+        private const string LogHubLogId = "RazorLogHub";
 
         protected override string LanguageName => LanguageNames.Razor;
 
-        private static bool CustomLoggersAdded = false;
+        private static bool s_customLoggersAdded = false;
 
         public override async Task InitializeAsync()
         {
@@ -70,17 +77,62 @@ namespace Microsoft.VisualStudio.Razor.IntegrationTests
             await TestServices.Editor.CloseDocumentWindowAsync(HangMitigatingCancellationToken);
 
             // Add custom logs on failure if they haven't already been.
-            if (!CustomLoggersAdded)
+            if (!s_customLoggersAdded)
             {
                 DataCollectionService.RegisterCustomLogger(RazorOutputPaneLogger, RazorOutputLogId, "log");
+                DataCollectionService.RegisterCustomLogger(RazorLogHubLogger, LogHubLogId, "zip");
 
-                CustomLoggersAdded = true;
+                s_customLoggersAdded = true;
+            }
+
+            // Fun fact, LogHub logs don't get collected until the VS instance closes. So that's fun.
+            async void RazorLogHubLogger(string filePath)
+            {
+                var componentModel = await TestServices.Shell.GetRequiredGlobalServiceAsync<SComponentModel, IComponentModel>(HangMitigatingCancellationToken);
+                var feedbackFileProviders = componentModel.GetExtensions<IFeedbackDiagnosticFileProvider>();
+
+                // Collect all the file names first since they can kick of file creation events that might need extra time to resolve.
+                var files = new List<string>();
+                foreach (var feedbackFileProvider in feedbackFileProviders)
+                {
+                    files.AddRange(feedbackFileProvider.GetFiles());
+                }
+
+                using var zip = ZipFile.Open(filePath, ZipArchiveMode.Create);
+                foreach (var file in files)
+                {
+                    var name = Path.GetFileName(file);
+                    // Files aren't guarenteed to exist once GetFiles returns, wait for some of the slower ones (like LogHub.zip)
+                    WaitForFileExists(file);
+                    if (File.Exists(file))
+                    {
+                        try
+                        {
+                            zip.CreateEntryFromFile(file, name);
+                        }
+                        catch (Exception)
+                        {
+                            // We can run into all kinds of file-related problems when doing this, so let's just avoid it all.
+                        }
+                    }
+                }
             }
 
             async void RazorOutputPaneLogger(string filePath)
             {
-                var paneContent = await TestServices.Output.GetRazorOutputPaneContentAsync(CancellationToken.None);
+                var paneContent = await TestServices.Output.GetRazorOutputPaneContentAsync(HangMitigatingCancellationToken);
                 File.WriteAllText(filePath, paneContent);
+            }
+        }
+
+        static void WaitForFileExists(string file)
+        {
+            const int MaxRetries = 120;
+            var retries = 0;
+            while (!File.Exists(file) && retries < MaxRetries)
+            {
+                retries++;
+                Thread.Sleep(TimeSpan.FromSeconds(1));
             }
         }
     }

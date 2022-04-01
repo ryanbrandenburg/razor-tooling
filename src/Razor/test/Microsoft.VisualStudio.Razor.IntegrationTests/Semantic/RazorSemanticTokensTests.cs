@@ -57,6 +57,8 @@ namespace Microsoft.VisualStudio.Razor.IntegrationTests
                 var expectedClassifications = await GetExpectedClassificationSpansAsync(nameof(Components_AreColored), HangMitigatingCancellationToken);
                 await TestServices.Editor.VerifyGetClassificationsAsync(expectedClassifications, HangMitigatingCancellationToken);
             }
+
+            Assert.True(false);
         }
 
         [IdeFact]
