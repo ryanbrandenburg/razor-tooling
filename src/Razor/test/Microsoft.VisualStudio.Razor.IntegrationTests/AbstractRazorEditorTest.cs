@@ -91,6 +91,7 @@ Welcome to your new app.
             // We open the Index.razor file, and wait for 3 RazorComponentElement's to be classified, as that
             // way we know the LSP server is up, running, and has processed both local and library-sourced Components
             await TestServices.SolutionExplorer.AddFileAsync(BlazorProjectName, ModifiedIndexRazorFile, IndexPageContent, open: true, HangMitigatingCancellationToken);
+
             try
             {
                 await TestServices.Editor.WaitForClassificationAsync(HangMitigatingCancellationToken, expectedClassification: RazorComponentElementClassification, count: 3);
@@ -105,6 +106,8 @@ Welcome to your new app.
                 RazorOutputPaneLogger(outputPaneFilePath);
                 throw;
             }
+
+            await TestServices.Output.WaitForRazorOutputPaneAsync(HangMitigatingCancellationToken);
 
             // Close the file we opened, just in case, so the test can start with a clean slate
             await TestServices.Editor.CloseDocumentWindowAsync(HangMitigatingCancellationToken);

@@ -4,6 +4,7 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+using EnvDTE;
 using Microsoft.VisualStudio.Razor.IntegrationTests.Extensions;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
@@ -30,6 +31,7 @@ namespace Microsoft.VisualStudio.Extensibility.Testing
         /// <returns>The contents of the RLSC output pane.</returns>
         public async Task<string?> GetRazorOutputPaneContentAsync(CancellationToken cancellationToken)
         {
+            await WaitForOutputPaneAsync(RazorPaneName, cancellationToken);
             var outputPaneTextView = GetOutputPaneTextView(RazorPaneName);
 
             if (outputPaneTextView is null)
@@ -40,14 +42,46 @@ namespace Microsoft.VisualStudio.Extensibility.Testing
             return await outputPaneTextView.GetContentAsync(JoinableTaskFactory, cancellationToken);
         }
 
+        public Task WaitForRazorOutputPaneAsync(CancellationToken cancellationToken) => WaitForOutputPaneAsync(RazorPaneName, cancellationToken);
+
+        public async Task WaitForOutputPaneAsync(string paneName, CancellationToken cancellationToken)
+        {
+            var (outputWindow, _) = GetOutputWindow();
+
+            using var semaphore = new SemaphoreSlim(1);
+            await semaphore.WaitAsync(cancellationToken);
+            var outputWindowEvents = outputWindow.OutputWindowPanes.DTE.Events.OutputWindowEvents;
+            outputWindowEvents.PaneAdded += On_PaneAdded;
+
+            var outputPane = GetOutputPaneTextView(paneName);
+            if(outputPane is not null)
+            {
+                semaphore.Release();
+                outputWindowEvents.PaneAdded -= On_PaneAdded;
+                return;
+            }
+
+            try
+            {
+                await semaphore.WaitAsync(cancellationToken);
+            }
+            finally
+            {
+                outputWindowEvents.PaneAdded -= On_PaneAdded;
+            }
+
+            void On_PaneAdded(OutputWindowPane outputPane)
+            {
+                if (outputPane.Name.Equals(paneName))
+                {
+                    semaphore.Release();
+                }
+            }
+        }
+
         private static IVsTextView? GetOutputPaneTextView(string paneName)
         {
-            var sVSOutputWindow = ServiceProvider.GlobalProvider.GetService<SVsOutputWindow, IVsOutputWindow>();
-            var extensibleObject = ServiceProvider.GlobalProvider.GetService<SVsOutputWindow, IVsExtensibleObject>();
-
-            // The null propName gives use the OutputWindow object
-            ErrorHandler.ThrowOnFailure(extensibleObject.GetAutomationObject(pszPropName: null, out var outputWindowObj));
-            var outputWindow = (EnvDTE.OutputWindow)outputWindowObj;
+            var (outputWindow, sVSOutputWindow) = GetOutputWindow();
 
             // This is a public entry point to COutputWindow::GetPaneByName
             EnvDTE.OutputWindowPane? pane = null;
@@ -77,5 +111,19 @@ namespace Microsoft.VisualStudio.Extensibility.Testing
                 return textView;
             }
         }
+
+        private static OutputWindowParts GetOutputWindow()
+        {
+            var sVSOutputWindow = ServiceProvider.GlobalProvider.GetService<SVsOutputWindow, IVsOutputWindow>();
+            var extensibleObject = ServiceProvider.GlobalProvider.GetService<SVsOutputWindow, IVsExtensibleObject>();
+
+            // The null propName gives us the OutputWindow object
+            ErrorHandler.ThrowOnFailure(extensibleObject.GetAutomationObject(pszPropName: null, out var outputWindowObj));
+            var outputWindow = (EnvDTE.OutputWindow)outputWindowObj;
+
+            return new OutputWindowParts(outputWindow, sVSOutputWindow);
+        }
+
+        private record OutputWindowParts(OutputWindow OutputWindow, IVsOutputWindow SVsOutputWindow);
     }
 }

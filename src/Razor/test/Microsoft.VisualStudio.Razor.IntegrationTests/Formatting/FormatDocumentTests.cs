@@ -8,6 +8,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.CodeAnalysis.Host;
+using Microsoft.VisualStudio.Razor.IntegrationTests.InProcess;
 using Xunit;
 
 namespace Microsoft.VisualStudio.Razor.IntegrationTests
@@ -43,6 +44,7 @@ namespace Microsoft.VisualStudio.Razor.IntegrationTests
         [InlineData("FormatOnPasteContainedLanguageCode.cshtml")]
         [InlineData("FormatSelection.cshtml")]
         [InlineData("FormatSelectionStartingWithContainedLanguageCode.cshtml")]
+
         [InlineData("FormatSwitchCaseBlock.cshtml")]
         [InlineData("RazorInCssClassAttribute.cshtml")]
         public async Task FormattingDocument(string testFileName)
@@ -66,7 +68,6 @@ namespace Microsoft.VisualStudio.Razor.IntegrationTests
             }
 
             await TestServices.Editor.SetTextAsync(input, HangMitigatingCancellationToken);
-
             // Wait for the document to settle
             if (testFileName == "FormatAndUndo.cshtml")
             {
