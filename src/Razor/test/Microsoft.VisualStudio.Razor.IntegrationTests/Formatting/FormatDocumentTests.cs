@@ -68,6 +68,7 @@ namespace Microsoft.VisualStudio.Razor.IntegrationTests
             }
 
             await TestServices.Editor.SetTextAsync(input, HangMitigatingCancellationToken);
+
             // Wait for the document to settle
             if (testFileName == "FormatAndUndo.cshtml")
             {

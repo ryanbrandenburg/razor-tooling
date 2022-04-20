@@ -35,7 +35,9 @@ namespace Microsoft.VisualStudio.Razor.IntegrationTests
 
 <h1>Hello, world!</h1>
 
-Welcome to your new app.
+<div>
+    Welcome to your new app.
+</div>
 
 <SurveyPrompt Title=""How is Blazor working for you?"" />";
 
@@ -92,9 +94,12 @@ Welcome to your new app.
             // way we know the LSP server is up, running, and has processed both local and library-sourced Components
             await TestServices.SolutionExplorer.AddFileAsync(BlazorProjectName, ModifiedIndexRazorFile, IndexPageContent, open: true, HangMitigatingCancellationToken);
 
+            await TestServices.Workspace.WaitForAsyncOperationsAsync(FeatureAttribute.DiagnosticService, HangMitigatingCancellationToken);
+
             try
             {
                 await TestServices.Editor.WaitForClassificationAsync(HangMitigatingCancellationToken, expectedClassification: RazorComponentElementClassification, count: 3);
+                await TestServices.Editor.WaitForOutlineRegionsAsync(HangMitigatingCancellationToken);
             }
             catch (OperationCanceledException)
             {
@@ -106,8 +111,6 @@ Welcome to your new app.
                 RazorOutputPaneLogger(outputPaneFilePath);
                 throw;
             }
-
-            await TestServices.Output.WaitForRazorOutputPaneAsync(HangMitigatingCancellationToken);
 
             // Close the file we opened, just in case, so the test can start with a clean slate
             await TestServices.Editor.CloseDocumentWindowAsync(HangMitigatingCancellationToken);
