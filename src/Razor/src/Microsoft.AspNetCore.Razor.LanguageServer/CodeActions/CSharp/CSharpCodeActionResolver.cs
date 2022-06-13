@@ -5,7 +5,7 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Razor.LanguageServer.CodeActions.Models;
-using Microsoft.AspNetCore.Razor.LanguageServer.Common;
+using Microsoft.CodeAnalysis.Razor.Workspaces;
 using Microsoft.VisualStudio.LanguageServer.Protocol;
 
 namespace Microsoft.AspNetCore.Razor.LanguageServer.CodeActions
@@ -32,8 +32,11 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.CodeActions
         protected async Task<CodeAction?> ResolveCodeActionWithServerAsync(Uri uri, CodeAction codeAction, CancellationToken cancellationToken)
         {
             var resolveCodeActionParams = new RazorResolveCodeActionParams(uri, codeAction);
-            var response = await LanguageServer.SendRequestAsync(RazorLanguageServerCustomMessageTargets.RazorResolveCodeActionsEndpoint, resolveCodeActionParams).ConfigureAwait(false);
-            var resolvedCodeAction = await response.Returning<CodeAction?>(cancellationToken).ConfigureAwait(false);
+
+            var resolvedCodeAction = await LanguageServer.SendRequestAsync<RazorResolveCodeActionParams, CodeAction?>(
+                LanguageServerConstants.RazorResolveCodeActionsEndpoint,
+                resolveCodeActionParams,
+                cancellationToken).ConfigureAwait(false);
 
             return resolvedCodeAction;
         }

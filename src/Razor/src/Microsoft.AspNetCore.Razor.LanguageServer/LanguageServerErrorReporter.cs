@@ -2,40 +2,40 @@
 // Licensed under the MIT license. See License.txt in the project root for license information.
 
 using System;
+using CommonLanguageServerProtocol.Framework;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Razor;
 using Microsoft.CodeAnalysis.Razor.ProjectSystem;
-using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Razor.LanguageServer
 {
     internal class LanguageServerErrorReporter : ErrorReporter
     {
-        private readonly ILogger _logger;
+        private readonly ILspLogger _logger;
 
-        public LanguageServerErrorReporter(ILoggerFactory loggerFactory)
+        public LanguageServerErrorReporter(ILspLogger logger)
         {
-            if (loggerFactory is null)
+            if (logger is null)
             {
-                throw new ArgumentNullException(nameof(loggerFactory));
+                throw new ArgumentNullException(nameof(logger));
             }
 
-            _logger = loggerFactory.CreateLogger<LanguageServerErrorReporter>();
+            _logger = logger;
         }
 
         public override void ReportError(Exception exception)
         {
-            _logger.LogError(exception, "Error thrown from LanguageServer");
+            _ = _logger.LogExceptionAsync(exception, "Error thrown from LanguageServer");
         }
 
         public override void ReportError(Exception exception, ProjectSnapshot? project)
         {
-            _logger.LogError(exception, "Error thrown from project {projectFilePath}", project?.FilePath);
+            _ = _logger.LogExceptionAsync(exception, "Error thrown from project {projectFilePath}", project?.FilePath ?? "null");
         }
 
         public override void ReportError(Exception exception, Project workspaceProject)
         {
-            _logger.LogError(exception, "Error thrown from project {workspaceProjectFilePath}", workspaceProject.FilePath);
+            _ = _logger.LogExceptionAsync(exception, "Error thrown from project {workspaceProjectFilePath}", workspaceProject.FilePath ?? "null");
         }
     }
 }

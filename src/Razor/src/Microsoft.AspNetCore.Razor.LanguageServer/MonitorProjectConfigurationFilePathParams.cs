@@ -3,11 +3,9 @@
 
 #nullable disable
 
-using MediatR;
-
 namespace Microsoft.AspNetCore.Razor.LanguageServer
 {
-    internal class MonitorProjectConfigurationFilePathParams : IRequest
+    internal class MonitorProjectConfigurationFilePathParams
     {
         public string ProjectFilePath { get; set; }
 

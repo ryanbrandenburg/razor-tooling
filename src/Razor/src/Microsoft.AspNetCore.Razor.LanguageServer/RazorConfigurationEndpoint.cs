@@ -4,7 +4,6 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
-using MediatR;
 using Microsoft.AspNetCore.Razor.LanguageServer.EndpointContracts;
 using Microsoft.Extensions.Logging;
 
@@ -13,31 +12,29 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
     internal class RazorConfigurationEndpoint : IDidChangeConfigurationEndpoint
     {
         private readonly RazorLSPOptionsMonitor _optionsMonitor;
-        private readonly ILogger _logger;
 
-        public RazorConfigurationEndpoint(RazorLSPOptionsMonitor optionsMonitor, ILoggerFactory loggerFactory)
+        public RazorConfigurationEndpoint(RazorLSPOptionsMonitor optionsMonitor)
         {
             if (optionsMonitor is null)
             {
                 throw new ArgumentNullException(nameof(optionsMonitor));
             }
 
-            if (loggerFactory is null)
-            {
-                throw new ArgumentNullException(nameof(loggerFactory));
-            }
-
             _optionsMonitor = optionsMonitor;
-            _logger = loggerFactory.CreateLogger<RazorConfigurationEndpoint>();
         }
 
-        public async Task<Unit> Handle(DidChangeConfigurationParamsBridge request, CancellationToken cancellationToken)
+        public bool MutatesSolutionState => true;
+
+        public object? GetTextDocumentIdentifier(DidChangeConfigurationParamsBridge request)
         {
-            _logger.LogTrace("Settings changed. Updating the server.");
+            return null;
+        }
+
+        public async Task HandleNotificationAsync(DidChangeConfigurationParamsBridge request, RazorRequestContext context, CancellationToken cancellationToken)
+        {
+            await context.LspLogger.LogInformationAsync("Settings changed. Updating the server.");
 
             await _optionsMonitor.UpdateAsync(cancellationToken);
-
-            return new Unit();
         }
     }
 }

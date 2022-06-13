@@ -12,10 +12,7 @@ using Microsoft.AspNetCore.Razor.LanguageServer;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Razor.ProjectSystem;
 using Microsoft.CodeAnalysis.Text;
-using Microsoft.Extensions.DependencyInjection;
-using OmniSharp.Extensions.JsonRpc;
-using OmniSharp.Extensions.LanguageServer.Protocol.Models;
-using OmniSharp.Extensions.LanguageServer.Protocol.Server;
+using static Microsoft.AspNetCore.Razor.LanguageServer.RazorLanguageServerTarget;
 
 namespace Microsoft.AspNetCore.Razor.Microbenchmarks.LanguageServer
 {
@@ -32,11 +29,7 @@ namespace Microsoft.AspNetCore.Razor.Microbenchmarks.LanguageServer
             RepoRoot = current.FullName;
 
             using var memoryStream = new MemoryStream();
-            RazorLanguageServerTask = RazorLanguageServer.CreateAsync(memoryStream, memoryStream, Trace.Off, configure: builder =>
-            {
-                builder.Services.AddSingleton<ClientNotifierServiceBase, NoopClientNotifierService>();
-                Builder(builder);
-            });
+           // RazorLanguageServerTask = RazorLanguageServer.CreateAsync(memoryStream, memoryStream, Trace.Off, razorLspServiceProvider: null, asynchronousOperationListenerProvider: null);
         }
 
         protected internal virtual void Builder(RazorLanguageServerBuilder builder)
@@ -66,34 +59,24 @@ namespace Microsoft.AspNetCore.Razor.Microbenchmarks.LanguageServer
 
         private class NoopClientNotifierService : ClientNotifierServiceBase
         {
-            public override InitializeParams ClientSettings => new InitializeParams();
-
-            public override Task OnStarted(ILanguageServer server, CancellationToken cancellationToken)
+            public override Task OnStartedAsync(CancellationToken cancellationToken)
             {
                 return Task.CompletedTask;
             }
 
-            public override Task<IResponseRouterReturns> SendRequestAsync(string method)
+            public override Task SendNotificationAsync<TParams>(string method, TParams @params, CancellationToken cancellationToken)
             {
-                return Task.FromResult<IResponseRouterReturns>(new NoopResponse());
+                throw new NotImplementedException();
             }
 
-            public override Task<IResponseRouterReturns> SendRequestAsync<T>(string method, T @params)
+            public override Task SendNotificationAsync(string method, CancellationToken cancellationToken)
             {
-                return Task.FromResult<IResponseRouterReturns>(new NoopResponse());
+                throw new NotImplementedException();
             }
 
-            class NoopResponse : IResponseRouterReturns
+            public override Task<TResponse> SendRequestAsync<TParams, TResponse>(string method, TParams @params, CancellationToken cancellationToken)
             {
-                public Task<TResponse> Returning<TResponse>(CancellationToken cancellationToken)
-                {
-                    return Task.FromResult(Activator.CreateInstance<TResponse>());
-                }
-
-                public Task ReturningVoid(CancellationToken cancellationToken)
-                {
-                    return Task.CompletedTask;
-                }
+                throw new NotImplementedException();
             }
         }
     }

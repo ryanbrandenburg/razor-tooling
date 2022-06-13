@@ -31,6 +31,8 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Definition
         private readonly RazorComponentSearchEngine _componentSearchEngine;
         private readonly RazorDocumentMappingService _documentMappingService;
 
+        public bool MutatesSolutionState => false;
+
         public RazorDefinitionEndpoint(
             DocumentContextFactory documentContextFactory,
             RazorComponentSearchEngine componentSearchEngine,
@@ -49,12 +51,12 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Definition
         public RegistrationExtensionResult? GetRegistration(VSInternalClientCapabilities clientCapabilities)
         {
             const string ServerCapability = "definitionProvider";
-            var option = new DefinitionOptions();
+            var option = new SumType<bool, DefinitionOptions>(new DefinitionOptions());
 
             return new RegistrationExtensionResult(ServerCapability, option);
         }
 
-        protected async override Task<DefinitionResult?> TryHandleAsync(DefinitionParamsBridge request, DocumentContext documentContext, Projection projection, CancellationToken cancellationToken)
+        protected async override Task<DefinitionResult?> TryHandleAsync(DefinitionParamsBridge request, RazorRequestContext requestContext, Projection projection, CancellationToken cancellationToken)
         {
             Logger.LogInformation("Starting go-to-def endpoint request.");
 
@@ -289,6 +291,11 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Definition
                 MarkupTagHelperEndTagSyntax tagHelperEndTag => tagHelperEndTag.Name,
                 _ => null
             };
+        }
+
+        public object? GetTextDocumentIdentifier(DefinitionParamsBridge request)
+        {
+            return request.TextDocument;
         }
     }
 }

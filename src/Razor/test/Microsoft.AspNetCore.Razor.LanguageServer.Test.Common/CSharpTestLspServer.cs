@@ -18,7 +18,9 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Test.Common
     public sealed class CSharpTestLspServer : IAsyncDisposable
     {
         private readonly AdhocWorkspace _testWorkspace;
-        private readonly IRazorLanguageServerTarget _languageServer;
+        private readonly ExportProvider _exportProvider;
+        private readonly ServerCapabilities _serverCapabilities;
+        private IRazorLanguageServerTarget? _languageServer;
 
         private readonly StreamJsonRpc.JsonRpc _clientRpc;
         private readonly StreamJsonRpc.JsonRpc _serverRpc;
@@ -35,6 +37,8 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Test.Common
             ServerCapabilities serverCapabilities)
         {
             _testWorkspace = testWorkspace;
+            _exportProvider = exportProvider;
+            _serverCapabilities = serverCapabilities;
 
             var (clientStream, serverStream) = FullDuplexStream.CreatePair();
 
@@ -44,8 +48,6 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Test.Common
             {
                 ExceptionStrategy = ExceptionProcessing.ISerializable,
             };
-
-            _languageServer = CreateLanguageServer(_serverRpc, testWorkspace, exportProvider, serverCapabilities);
 
             _clientMessageFormatter = CreateJsonMessageFormatter();
             _clientMessageHandler = new HeaderDelimitedMessageHandler(clientStream, clientStream, _clientMessageFormatter);
@@ -62,8 +64,13 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Test.Common
                 VSInternalExtensionUtilities.AddVSInternalExtensionConverters(messageFormatter.JsonSerializer);
                 return messageFormatter;
             }
+        }
 
-            static IRazorLanguageServerTarget CreateLanguageServer(
+        private async Task InitializeAsync()
+        {
+            _languageServer = await CreateLanguageServerAsync(_serverRpc, _testWorkspace, _exportProvider, _serverCapabilities);
+
+            static async Task<IRazorLanguageServerTarget> CreateLanguageServerAsync(
                 StreamJsonRpc.JsonRpc serverRpc,
                 Workspace workspace,
                 ExportProvider exportProvider,
@@ -75,7 +82,8 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Test.Common
                 registrationService.Register(workspace);
 
                 var languageServerFactory = exportProvider.GetExportedValue<IRazorLanguageServerFactoryWrapper>();
-                var languageServer = languageServerFactory.CreateLanguageServer(serverRpc, capabilitiesProvider);
+
+                var languageServer = await languageServerFactory.CreateLanguageServer(serverRpc, capabilitiesProvider);
 
                 serverRpc.StartListening();
                 return languageServer;
@@ -89,6 +97,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Test.Common
             ServerCapabilities serverCapabilities)
         {
             var server = new CSharpTestLspServer(testWorkspace, exportProvider, serverCapabilities);
+            await server.InitializeAsync();
 
             await server.ExecuteRequestAsync<InitializeParams, InitializeResult>(Methods.InitializeName, new InitializeParams
             {
@@ -120,7 +129,11 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Test.Common
         public async ValueTask DisposeAsync()
         {
             _testWorkspace.Dispose();
-            await _languageServer.DisposeAsync();
+            var disposeTask = _languageServer?.DisposeAsync();
+            if (disposeTask is not null)
+            {
+                await disposeTask.Value;
+            }
 
             _clientRpc.Dispose();
             _clientMessageFormatter.Dispose();

@@ -6,6 +6,7 @@
 using System.Collections.Generic;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Host;
+using Microsoft.CodeAnalysis.LanguageServer;
 
 namespace Microsoft.AspNetCore.Razor.LanguageServer
 {

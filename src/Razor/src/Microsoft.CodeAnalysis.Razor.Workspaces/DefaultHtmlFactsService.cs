@@ -3,10 +3,12 @@
 
 #nullable disable
 
+using System.Composition;
 using Microsoft.AspNetCore.Razor.Language.Syntax;
 
 namespace Microsoft.VisualStudio.Editor.Razor
 {
+    [Export(typeof(HtmlFactsService)), Shared]
     internal class DefaultHtmlFactsService : HtmlFactsService
     {
         public override bool TryGetElementInfo(SyntaxNode element, out SyntaxToken containingTagNameToken, out SyntaxList<RazorSyntaxNode> attributeNodes)

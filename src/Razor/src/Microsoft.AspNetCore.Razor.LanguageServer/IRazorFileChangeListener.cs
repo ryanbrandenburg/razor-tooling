@@ -4,6 +4,7 @@
 #nullable disable
 
 using Microsoft.AspNetCore.Razor.LanguageServer.Common;
+using Microsoft.CodeAnalysis.LanguageServer;
 
 namespace Microsoft.AspNetCore.Razor.LanguageServer
 {

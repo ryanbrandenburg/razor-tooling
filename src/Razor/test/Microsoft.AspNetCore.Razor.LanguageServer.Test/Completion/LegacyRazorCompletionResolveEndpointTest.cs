@@ -5,7 +5,9 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Razor.LanguageServer.EndpointContracts;
 using Microsoft.AspNetCore.Razor.LanguageServer.Tooltip;
@@ -14,6 +16,7 @@ using Microsoft.CodeAnalysis.Razor.Completion;
 using Microsoft.CodeAnalysis.Razor.Tooltip;
 using Microsoft.VisualStudio.LanguageServer.Protocol;
 using Moq;
+using Newtonsoft.Json;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Razor.LanguageServer.Completion
@@ -72,9 +75,10 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Completion
             var completionList = CreateLSPCompletionList(new[] { razorCompletionItem });
             var completionItem = completionList.Items.Single();
             var parameters = ConvertToBridgedItem(completionItem);
+            var requestContext = CreateRazorRequestContext(documentContext: null);
 
             // Act
-            var newCompletionItem = await endpoint.Handle(parameters, default);
+            var newCompletionItem = await endpoint.HandleRequestAsync(parameters, requestContext, default);
 
             // Assert
             Assert.NotNull(newCompletionItem.Documentation);
@@ -91,9 +95,10 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Completion
             var completionList = CreateLSPCompletionList(new[] { razorCompletionItem });
             var completionItem = completionList.Items.Single();
             var parameters = ConvertToBridgedItem(completionItem);
+            var requestContext = CreateRazorRequestContext(documentContext: null);
 
             // Act
-            var newCompletionItem = await endpoint.Handle(parameters, default);
+            var newCompletionItem = await endpoint.HandleRequestAsync(parameters, requestContext, default);
 
             // Assert
             Assert.NotNull(newCompletionItem.Documentation);
@@ -118,9 +123,10 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Completion
             var completionList = CreateLSPCompletionList(new[] { razorCompletionItem });
             var completionItem = completionList.Items.Single();
             var parameters = ConvertToBridgedItem(completionItem);
+            var requestContext = CreateRazorRequestContext(documentContext: null);
 
             // Act
-            var newCompletionItem = await endpoint.Handle(parameters, default);
+            var newCompletionItem = await endpoint.HandleRequestAsync(parameters, requestContext, default);
 
             // Assert
             Assert.NotNull(newCompletionItem.Documentation);
@@ -145,9 +151,10 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Completion
             var completionList = CreateLSPCompletionList(new[] { razorCompletionItem });
             var completionItem = completionList.Items.Single();
             var parameters = ConvertToBridgedItem(completionItem);
+            var requestContext = CreateRazorRequestContext(documentContext: null);
 
             // Act
-            var newCompletionItem = await endpoint.Handle(parameters, default);
+            var newCompletionItem = await endpoint.HandleRequestAsync(parameters, requestContext, default);
 
             // Assert
             Assert.NotNull(newCompletionItem.Documentation);
@@ -172,9 +179,10 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Completion
             var completionList = CreateLSPCompletionList(new[] { razorCompletionItem });
             var completionItem = completionList.Items.Single();
             var parameters = ConvertToBridgedItem(completionItem);
+            var requestContext = CreateRazorRequestContext(documentContext: null);
 
             // Act
-            var newCompletionItem = await endpoint.Handle(parameters, default);
+            var newCompletionItem = await endpoint.HandleRequestAsync(parameters, requestContext, default);
 
             // Assert
             Assert.NotNull(newCompletionItem.Documentation);
@@ -199,9 +207,10 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Completion
             var completionList = CreateLSPCompletionList(new[] { razorCompletionItem });
             var completionItem = completionList.Items.Single();
             var parameters = ConvertToBridgedItem(completionItem);
+            var requestContext = CreateRazorRequestContext(documentContext: null);
 
             // Act
-            var newCompletionItem = await endpoint.Handle(parameters, default);
+            var newCompletionItem = await endpoint.HandleRequestAsync(parameters, requestContext, default);
 
             // Assert
             Assert.NotNull(newCompletionItem.Documentation);
@@ -223,9 +232,10 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Completion
             endpoint.GetRegistration(DefaultClientCapability);
             var completionItem = new CompletionItem();
             var parameters = ConvertToBridgedItem(completionItem);
+            var requestContext = CreateRazorRequestContext(documentContext: null);
 
             // Act
-            var newCompletionItem = await endpoint.Handle(parameters, default);
+            var newCompletionItem = await endpoint.HandleRequestAsync(parameters, requestContext, default);
 
             // Assert
             Assert.Null(newCompletionItem.Documentation);
@@ -241,8 +251,11 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Completion
 
         private VSCompletionItemBridge ConvertToBridgedItem(CompletionItem completionItem)
         {
-            var serialized = Serializer.SerializeObject(completionItem);
-            var bridgedItem = Serializer.DeserializeObject<VSCompletionItemBridge>(serialized);
+            var textWriter = new StringWriter();
+            Serializer.Serialize(textWriter, completionItem);
+            var stringBuilder = textWriter.GetStringBuilder();
+            var jsonReader = new JsonTextReader(new StringReader(stringBuilder.ToString()));
+            var bridgedItem = Serializer.Deserialize<VSCompletionItemBridge>(jsonReader);
             return bridgedItem;
         }
     }

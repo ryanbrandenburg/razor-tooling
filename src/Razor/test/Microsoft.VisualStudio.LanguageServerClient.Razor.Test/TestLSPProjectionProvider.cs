@@ -3,12 +3,13 @@
 
 #nullable disable
 
+using System;
 using System.Threading;
 using System.Threading.Tasks;
+using CommonLanguageServerProtocol.Framework;
 using Microsoft.AspNetCore.Razor.LanguageServer;
 using Microsoft.AspNetCore.Razor.LanguageServer.Protocol;
 using Microsoft.AspNetCore.Razor.LanguageServer.Test.Common;
-using Microsoft.AspNetCore.Razor.Test.Common;
 using Microsoft.CodeAnalysis.Text;
 using Microsoft.VisualStudio.LanguageServer.ContainedLanguage;
 using Microsoft.VisualStudio.LanguageServer.Protocol;
@@ -17,11 +18,46 @@ using Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp;
 
 namespace Microsoft.VisualStudio.LanguageServerClient.Razor.Test
 {
+    public class NoOpLspLogger : ILspLogger
+    {
+        public static NoOpLspLogger Instance = new NoOpLspLogger();
+
+        public Task LogEndContextAsync(string message, params object[] @params)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task LogErrorAsync(string message, params object[] @params)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task LogExceptionAsync(Exception exception, string? message = null, params object[] @params)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task LogInformationAsync(string message, params object[] @params)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task LogStartContextAsync(string message, params object[] @params)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task LogWarningAsync(string message, params object[] @params)
+        {
+            throw new NotImplementedException();
+        }
+    }
+
     internal sealed class TestLSPProjectionProvider : LSPProjectionProvider
     {
         public static readonly TestLSPProjectionProvider Instance = new();
 
-        private readonly DefaultRazorDocumentMappingService _mappingService = new(TestLanguageServerFeatureOptions.Instance, new TestDocumentContextFactory(), TestLoggerFactory.Instance);
+        private readonly DefaultRazorDocumentMappingService _mappingService = new(TestLanguageServerFeatureOptions.Instance, new TestDocumentContextFactory(), TestLogger.Instance);
 
         private TestLSPProjectionProvider()
         {

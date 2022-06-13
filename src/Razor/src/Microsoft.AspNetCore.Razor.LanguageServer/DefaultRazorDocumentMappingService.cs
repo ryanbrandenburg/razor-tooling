@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Composition;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
@@ -26,11 +27,11 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
         private readonly DocumentContextFactory _documentContextFactory;
         private readonly ILogger _logger;
 
+        [ImportingConstructor]
         public DefaultRazorDocumentMappingService(
             LanguageServerFeatureOptions languageServerFeatureOptions,
             DocumentContextFactory documentContextFactory,
-            ILoggerFactory loggerFactory)
-            : base()
+            ILogger logger)
         {
             if (languageServerFeatureOptions is null)
             {
@@ -42,14 +43,14 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
                 throw new ArgumentNullException(nameof(documentContextFactory));
             }
 
-            if (loggerFactory is null)
+            if (logger is null)
             {
-                throw new ArgumentNullException(nameof(loggerFactory));
+                throw new ArgumentNullException(nameof(logger));
             }
 
             _languageServerFeatureOptions = languageServerFeatureOptions;
             _documentContextFactory = documentContextFactory;
-            _logger = loggerFactory.CreateLogger<DefaultRazorDocumentMappingService>();
+            _logger = logger;
         }
 
 #pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
@@ -776,7 +777,8 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             {
                 s_haveAsserted = true;
                 var sourceTextLinesCount = sourceText.Lines.Count;
-                _logger.LogWarning("Attempted to map a range {range} outside of the Source (line count {sourceTextLinesCount}.) This could happen if the Roslyn and Razor LSP servers are not in sync.", range, sourceTextLinesCount);
+                _logger.LogWarning("Attempted to map a range {range} outside of the Source (line count {sourceTextLinesCount}.) This could happen if the Roslyn and Razor LSP servers are not in sync.",
+                    range, sourceTextLinesCount);
             }
 
             return result;

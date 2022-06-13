@@ -8,6 +8,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Razor.LanguageServer.EndpointContracts;
+using Microsoft.AspNetCore.Razor.LanguageServer.Extensions;
 using Microsoft.AspNetCore.Razor.LanguageServer.Tooltip;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Razor.Completion;
@@ -32,6 +33,8 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Completion
 
         // Guid is magically generated and doesn't mean anything. O# magic.
         public Guid Id => new("011c77cc-f90e-4f2e-b32c-dafc6587ccd6");
+
+        public bool MutatesSolutionState => false;
 
         public LegacyRazorCompletionResolveEndpoint(
             LSPTagHelperTooltipFactory lspTagHelperTooltipFactory,
@@ -65,10 +68,10 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Completion
             _completionListCache = completionListCache;
         }
 
-        public RegistrationExtensionResult? GetRegistration(VSInternalClientCapabilities clientCapabilities)
+        public RegistrationExtensionResult? GetRegistration(ClientCapabilities clientCapabilities)
         {
             _completionCapability = clientCapabilities.TextDocument?.Completion as VSInternalCompletionSetting;
-            _clientCapabilities = clientCapabilities;
+            _clientCapabilities = clientCapabilities.ToVSInternalClientCapabilities();
 
             var completionSupportedKinds = clientCapabilities.TextDocument?.Completion?.CompletionItem?.DocumentationFormat;
             _documentationKind = completionSupportedKinds?.Contains(MarkupKind.Markdown) == true ? MarkupKind.Markdown : MarkupKind.PlainText;
@@ -76,7 +79,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Completion
             return null;
         }
 
-        public Task<VSInternalCompletionItem> Handle(VSCompletionItemBridge completionItemBridge, CancellationToken cancellationToken)
+        public Task<VSInternalCompletionItem> HandleRequestAsync(VSCompletionItemBridge completionItemBridge, RazorRequestContext requestContext, CancellationToken cancellationToken)
         {
             VSInternalCompletionItem completionItem = completionItemBridge;
 
@@ -189,6 +192,11 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Completion
             }
 
             return Task.FromResult(completionItem);
+        }
+
+        public object? GetTextDocumentIdentifier(VSCompletionItemBridge request)
+        {
+            return null;
         }
     }
 }

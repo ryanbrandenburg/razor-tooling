@@ -20,18 +20,11 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.AutoInsert
         private readonly AdhocWorkspaceFactory _workspaceFactory;
         private readonly IReadOnlyList<RazorOnAutoInsertProvider> _onAutoInsertProviders;
         private readonly ImmutableHashSet<string> _onAutoInsertTriggerCharacters;
-        private readonly DocumentContextFactory _documentContextFactory;
 
         public OnAutoInsertEndpoint(
-            DocumentContextFactory documentContextFactory,
             IEnumerable<RazorOnAutoInsertProvider> onAutoInsertProvider,
             AdhocWorkspaceFactory workspaceFactory)
         {
-            if (documentContextFactory is null)
-            {
-                throw new ArgumentNullException(nameof(documentContextFactory));
-            }
-
             if (onAutoInsertProvider is null)
             {
                 throw new ArgumentNullException(nameof(onAutoInsertProvider));
@@ -42,13 +35,14 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.AutoInsert
                 throw new ArgumentNullException(nameof(workspaceFactory));
             }
 
-            _documentContextFactory = documentContextFactory;
             _workspaceFactory = workspaceFactory;
             _onAutoInsertProviders = onAutoInsertProvider.ToList();
             _onAutoInsertTriggerCharacters = _onAutoInsertProviders.Select(provider => provider.TriggerCharacter).ToImmutableHashSet();
         }
 
-        public RegistrationExtensionResult GetRegistration(VSInternalClientCapabilities clientCapabilities)
+        public bool MutatesSolutionState => throw new NotImplementedException();
+
+        public RegistrationExtensionResult GetRegistration(ClientCapabilities clientCapabilities)
         {
             const string AssociatedServerCapability = "_vs_onAutoInsertProvider";
 
@@ -60,9 +54,14 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.AutoInsert
             return new RegistrationExtensionResult(AssociatedServerCapability, registrationOptions);
         }
 
-        public async Task<VSInternalDocumentOnAutoInsertResponseItem?> Handle(OnAutoInsertParamsBridge request, CancellationToken cancellationToken)
+        public object? GetTextDocumentIdentifier(OnAutoInsertParamsBridge request)
         {
-            var documentContext = await _documentContextFactory.TryCreateAsync(request.TextDocument.Uri, cancellationToken).ConfigureAwait(false);
+            throw new NotImplementedException();
+        }
+
+        public async Task<VSInternalDocumentOnAutoInsertResponseItem?> HandleRequestAsync(OnAutoInsertParamsBridge request, RazorRequestContext requestContext, CancellationToken cancellationToken)
+        {
+            var documentContext = requestContext.DocumentContext;
             if (documentContext is null || cancellationToken.IsCancellationRequested)
             {
                 return null;

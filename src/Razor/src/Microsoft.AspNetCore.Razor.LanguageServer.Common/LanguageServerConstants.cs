@@ -5,6 +5,8 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Common
 {
     public static class LanguageServerConstants
     {
+        public const string RazorLanguageContract = "RazorLanguages";
+
         public const int VSCompletionItemKindOffset = 118115;
 
         public const string DefaultProjectConfigurationFile = "project.razor.json";
@@ -35,9 +37,9 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Common
 
         public const string RazorCompletionEndpointName = "razor/completion";
 
-        public const string RazorCompletionResolveEndpointName = "razor/completionItem/resolve";
-
         public const string RazorGetFormattingOptionsEndpointName = "razor/formatting/options";
+
+        public const string RazorCompletionResolveEndpointName = "razor/completionItem/resolve";
 
         // This needs to be the same as in Web Tools, that is used by the HTML editor, because
         // we actually respond to the Web Tools "Wrap With Div" command handler, which sends this message

@@ -111,7 +111,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
                 _initializeResult.Capabilities.HoverProvider = false;
                 _initializeResult.Capabilities.DefinitionProvider = false;
             }
-
+            
             if (!_languageServerFeatureOptions.SingleServerCompletionSupport)
             {
                 // Feature flag is not on, fallback to utilizing completion handler

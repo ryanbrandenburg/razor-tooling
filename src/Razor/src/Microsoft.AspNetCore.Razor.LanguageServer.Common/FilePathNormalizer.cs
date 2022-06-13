@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See License.txt in the project root for license information.
 
 using System;
+using System.Composition;
 using System.Net;
 using System.Runtime.InteropServices;
 using Microsoft.CodeAnalysis.Razor;

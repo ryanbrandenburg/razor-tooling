@@ -146,9 +146,9 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.CodeActions
             var editCodeDocumentChange = documentChanges[1];
             Assert.True(editCodeDocumentChange.TryGetFirst(out var textDocumentEdit1));
             var editCodeDocumentEdit = textDocumentEdit1!.Edits.First();
-            Assert.True(editCodeDocumentEdit.Range.Start.TryGetAbsoluteIndex(codeDocument.GetSourceText(), _logger, out var removeStart));
+            Assert.True(editCodeDocumentEdit.Range.Start.TryGetAbsoluteIndex(codeDocument.GetSourceText(), logger: null, out var removeStart));
             Assert.Equal(actionParams.RemoveStart, removeStart);
-            Assert.True(editCodeDocumentEdit.Range.End.TryGetAbsoluteIndex(codeDocument.GetSourceText(), _logger, out var removeEnd));
+            Assert.True(editCodeDocumentEdit.Range.End.TryGetAbsoluteIndex(codeDocument.GetSourceText(), logger: null, out var removeEnd));
             Assert.Equal(actionParams.RemoveEnd, removeEnd);
 
             var editCodeBehindChange = documentChanges[2];
@@ -195,9 +195,9 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.CodeActions
             var editCodeDocumentChange = documentChanges[1];
             Assert.True(editCodeDocumentChange.TryGetFirst(out var editCodeDocument));
             var editCodeDocumentEdit = editCodeDocument!.Edits.First();
-            Assert.True(editCodeDocumentEdit.Range.Start.TryGetAbsoluteIndex(codeDocument.GetSourceText(), _logger, out var removeStart));
+            Assert.True(editCodeDocumentEdit.Range.Start.TryGetAbsoluteIndex(codeDocument.GetSourceText(), logger: null, out var removeStart));
             Assert.Equal(actionParams.RemoveStart, removeStart);
-            Assert.True(editCodeDocumentEdit.Range.End.TryGetAbsoluteIndex(codeDocument.GetSourceText(), _logger, out var removeEnd));
+            Assert.True(editCodeDocumentEdit.Range.End.TryGetAbsoluteIndex(codeDocument.GetSourceText(), logger: null, out var removeEnd));
             Assert.Equal(actionParams.RemoveEnd, removeEnd);
 
             var editCodeBehindChange = documentChanges[2];
@@ -244,9 +244,9 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.CodeActions
             var editCodeDocumentChange = documentChanges[1];
             Assert.True(editCodeDocumentChange.TryGetFirst(out var editCodeDocument));
             var editCodeDocumentEdit = editCodeDocument!.Edits.First();
-            Assert.True(editCodeDocumentEdit.Range.Start.TryGetAbsoluteIndex(codeDocument.GetSourceText(), _logger, out var removeStart));
+            Assert.True(editCodeDocumentEdit.Range.Start.TryGetAbsoluteIndex(codeDocument.GetSourceText(), logger: null, out var removeStart));
             Assert.Equal(actionParams.RemoveStart, removeStart);
-            Assert.True(editCodeDocumentEdit.Range.End.TryGetAbsoluteIndex(codeDocument.GetSourceText(), _logger, out var removeEnd));
+            Assert.True(editCodeDocumentEdit.Range.End.TryGetAbsoluteIndex(codeDocument.GetSourceText(), logger: null, out var removeEnd));
             Assert.Equal(actionParams.RemoveEnd, removeEnd);
 
             var editCodeBehindChange = documentChanges[2];

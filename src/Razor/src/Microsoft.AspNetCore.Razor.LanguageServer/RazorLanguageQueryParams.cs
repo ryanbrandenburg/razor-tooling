@@ -4,12 +4,11 @@
 #nullable disable
 
 using System;
-using MediatR;
 using Microsoft.VisualStudio.LanguageServer.Protocol;
 
 namespace Microsoft.AspNetCore.Razor.LanguageServer
 {
-    internal class RazorLanguageQueryParams : IRequest<RazorLanguageQueryResponse>
+    internal class RazorLanguageQueryParams
     {
         public Uri Uri { get; set; }
 

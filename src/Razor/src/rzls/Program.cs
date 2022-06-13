@@ -46,12 +46,26 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
                 }
             }
 
-            var server = await RazorLanguageServer.CreateAsync(
-                Console.OpenStandardInput(),
-                Console.OpenStandardOutput(),
-                trace);
-            await server.InitializedAsync(CancellationToken.None);
-            await server.WaitForExit;
+            throw new NotImplementedException();
+            //var server = await RazorLanguageServer.CreateAsync(
+            //    Console.OpenStandardInput(),
+            //    Console.OpenStandardOutput(),
+            //    trace,
+            //    razorLspServiceProvider: null,
+            //    asynchronousOperationListenerProvider: null);
+            //await server.InitializedAsync(CancellationToken.None);
+
+            //using var semaphore = new SemaphoreSlim(1);
+            //await semaphore.WaitAsync();
+
+            //server.Exit += On_Exit;
+
+            //await semaphore.WaitAsync();
+
+            //void On_Exit(object sender, object args)
+            //{
+            //    semaphore.Release();
+            //}
         }
     }
 }

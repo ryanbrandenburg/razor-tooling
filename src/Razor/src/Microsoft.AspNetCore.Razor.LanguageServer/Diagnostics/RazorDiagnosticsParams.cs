@@ -4,14 +4,13 @@
 #nullable disable
 
 using System;
-using MediatR;
 using Microsoft.AspNetCore.Razor.LanguageServer.Protocol;
 using Microsoft.VisualStudio.LanguageServer.Protocol;
 
 namespace Microsoft.AspNetCore.Razor.LanguageServer.Diagnostics
 {
     // Note: This type should be kept in sync with the one in VisualStudio.LanguageServerClient assembly.
-    internal class RazorDiagnosticsParams : IRequest<RazorDiagnosticsResponse>
+    internal class RazorDiagnosticsParams
     {
         public RazorLanguageKind Kind { get; set; }
 

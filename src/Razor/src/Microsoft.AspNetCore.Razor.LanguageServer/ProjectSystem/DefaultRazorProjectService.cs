@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Composition;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -122,7 +123,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.ProjectSystem
             var defaultProject = (DefaultProjectSnapshot)projectSnapshot;
             var textLoader = _remoteTextLoaderFactory.Create(textDocumentPath);
 
-            _logger.LogInformation("Adding document '{filePath}' to project '{projectSnapshotFilePath}'.", filePath, projectSnapshot.FilePath);
+            _logger.LogInformation("Adding document '{filePath}' to project '{projectSnapshot.FilePath}'.", filePath, projectSnapshot.FilePath);
             _projectSnapshotManagerAccessor.Instance.DocumentAdded(defaultProject.HostProject, hostDocument, textLoader);
         }
 
@@ -391,7 +392,6 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.ProjectSystem
                 }
             }
         }
-
         private void MoveDocument(string documentFilePath, DefaultProjectSnapshot fromProject, DefaultProjectSnapshot toProject)
         {
             Debug.Assert(fromProject.DocumentFilePaths.Contains(documentFilePath, FilePathComparer.Instance));

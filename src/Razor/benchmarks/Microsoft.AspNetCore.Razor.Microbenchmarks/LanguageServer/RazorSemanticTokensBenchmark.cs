@@ -9,14 +9,15 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using BenchmarkDotNet.Attributes;
+using CommonLanguageServerProtocol.Framework;
 using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.AspNetCore.Razor.LanguageServer;
 using Microsoft.AspNetCore.Razor.LanguageServer.Semantic;
 using Microsoft.CodeAnalysis.Razor;
 using Microsoft.CodeAnalysis.Razor.ProjectSystem;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
 using Microsoft.VisualStudio.LanguageServer.Protocol;
+using static Microsoft.AspNetCore.Razor.LanguageServer.RazorLanguageServerTarget;
 using Range = Microsoft.VisualStudio.LanguageServer.Protocol.Range;
 
 namespace Microsoft.AspNetCore.Razor.Microbenchmarks.LanguageServer
@@ -92,6 +93,11 @@ namespace Microsoft.AspNetCore.Razor.Microbenchmarks.LanguageServer
                 textDocumentIdentifier, Range, DocumentContext, cancellationToken).ConfigureAwait(false);
         }
 
+        private static LspServices GetLspServices()
+        {
+            throw new NotImplementedException();
+        }
+
         private async Task UpdateDocumentAsync(int newVersion, DocumentSnapshot documentSnapshot, CancellationToken cancellationToken)
         {
             await ProjectSnapshotManagerDispatcher.RunOnDispatcherThreadAsync(
@@ -99,9 +105,9 @@ namespace Microsoft.AspNetCore.Razor.Microbenchmarks.LanguageServer
         }
 
         [GlobalCleanup]
-        public void CleanupServer()
+        public async Task CleanupServerAsync()
         {
-            RazorLanguageServer?.Dispose();
+            await RazorLanguageServer.DisposeAsync();
         }
 
         protected internal override void Builder(RazorLanguageServerBuilder builder)
@@ -118,33 +124,29 @@ namespace Microsoft.AspNetCore.Razor.Microbenchmarks.LanguageServer
 
             RazorLanguageServer = await RazorLanguageServerTask.ConfigureAwait(false);
             var languageServer = RazorLanguageServer.GetInnerLanguageServerForTesting();
-            RazorSemanticTokenService = languageServer.GetService(typeof(RazorSemanticTokensInfoService)) as TestRazorSemanticTokensInfoService;
-            VersionCache = languageServer.GetService(typeof(DocumentVersionCache)) as DocumentVersionCache;
-            ProjectSnapshotManagerDispatcher = languageServer.GetService(typeof(ProjectSnapshotManagerDispatcher)) as ProjectSnapshotManagerDispatcher;
+            RazorSemanticTokenService = languageServer.GetRequiredService<RazorSemanticTokensInfoService>() as TestRazorSemanticTokensInfoService;
+            VersionCache = languageServer.GetRequiredService<DocumentVersionCache>();
+            ProjectSnapshotManagerDispatcher = languageServer.GetRequiredService<ProjectSnapshotManagerDispatcher>();
         }
 
         internal class TestRazorSemanticTokensInfoService : DefaultRazorSemanticTokensInfoService
         {
-            public TestRazorSemanticTokensInfoService(
-                ClientNotifierServiceBase languageServer,
-                RazorDocumentMappingService documentMappingService,
-                DocumentContextFactory documentContextFactory,
-                LoggerFactory loggerFactory)
-                : base(languageServer, documentMappingService, documentContextFactory, loggerFactory)
+            public TestRazorSemanticTokensInfoService(ClientNotifierServiceBase languageServer, RazorDocumentMappingService documentMappingService)
+                : base(languageServer, documentMappingService)
             {
             }
 
             // We can't get C# responses without significant amounts of extra work, so let's just shim it for now, any non-Null result is fine.
-            internal override Task<SemanticRange[]> GetCSharpSemanticRangesAsync(
+            internal override async Task<SemanticRange[]?> GetCSharpSemanticRangesAsync(
                 RazorCodeDocument codeDocument,
                 TextDocumentIdentifier textDocumentIdentifier,
-                Range range,
+                Range razorRange,
                 long documentVersion,
                 CancellationToken cancellationToken,
-                string previousResultId = null)
+                string? previousResultId = null)
             {
                 var result = Array.Empty<SemanticRange>();
-                return Task.FromResult(result);
+                return result;
             }
         }
     }

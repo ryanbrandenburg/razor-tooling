@@ -326,7 +326,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Definition
             SetupDocument(out var codeDocument, out _, content);
             var expectedRange = selection.AsRange(codeDocument.GetSourceText());
 
-            var mappingService = new DefaultRazorDocumentMappingService(TestLanguageServerFeatureOptions.Instance, new TestDocumentContextFactory(), LoggerFactory);
+            var mappingService = new DefaultRazorDocumentMappingService(TestLanguageServerFeatureOptions.Instance, new TestDocumentContextFactory(), Logger);
 
             // Act II
             var range = await RazorDefinitionEndpoint.TryGetPropertyRangeAsync(codeDocument, "Title", mappingService, Logger, CancellationToken.None).ConfigureAwait(false);

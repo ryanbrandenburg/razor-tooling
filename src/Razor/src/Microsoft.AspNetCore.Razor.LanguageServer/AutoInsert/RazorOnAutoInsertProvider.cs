@@ -13,14 +13,14 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.AutoInsert
     {
         internal readonly ILogger Logger;
 
-        public RazorOnAutoInsertProvider(ILoggerFactory loggerFactory)
+        public RazorOnAutoInsertProvider(ILogger logger)
         {
-            if (loggerFactory is null)
+            if (logger is null)
             {
-                throw new ArgumentNullException(nameof(loggerFactory));
+                throw new ArgumentNullException(nameof(logger));
             }
 
-            Logger = loggerFactory.CreateLogger<RazorOnAutoInsertProvider>();
+            Logger = logger;
         }
 
         public abstract string TriggerCharacter { get; }

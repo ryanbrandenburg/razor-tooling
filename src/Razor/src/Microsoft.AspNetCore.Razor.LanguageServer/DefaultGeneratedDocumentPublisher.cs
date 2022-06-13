@@ -7,12 +7,11 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading;
-using Microsoft.AspNetCore.Razor.LanguageServer.Common;
 using Microsoft.CodeAnalysis.Razor;
 using Microsoft.CodeAnalysis.Razor.ProjectSystem;
+using Microsoft.CodeAnalysis.Razor.Workspaces;
 using Microsoft.CodeAnalysis.Text;
 using Microsoft.Extensions.Logging;
-using OmniSharp.Extensions.LanguageServer.Protocol.Server;
 
 namespace Microsoft.AspNetCore.Razor.LanguageServer
 {
@@ -20,14 +19,14 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
     {
         private readonly Dictionary<string, PublishData> _publishedCSharpData;
         private readonly Dictionary<string, PublishData> _publishedHtmlData;
-        private readonly IClientLanguageServer _server;
+        private readonly ClientNotifierServiceBase _server;
         private readonly ILogger _logger;
         private readonly ProjectSnapshotManagerDispatcher _projectSnapshotManagerDispatcher;
         private ProjectSnapshotManagerBase _projectSnapshotManager;
 
         public DefaultGeneratedDocumentPublisher(
             ProjectSnapshotManagerDispatcher projectSnapshotManagerDispatcher,
-            IClientLanguageServer server,
+            ClientNotifierServiceBase server,
             ILoggerFactory loggerFactory)
         {
             if (projectSnapshotManagerDispatcher is null)
@@ -108,9 +107,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
                 HostDocumentVersion = hostDocumentVersion,
             };
 
-            var result = _server.SendRequest(RazorLanguageServerCustomMessageTargets.RazorUpdateCSharpBufferEndpoint, request);
-            // This is the call that actually makes the request, any SendRequest without a .Returning* after it will do nothing.
-            _ = result.ReturningVoid(CancellationToken.None);
+            _ = _server.SendNotificationAsync(LanguageServerConstants.RazorUpdateCSharpBufferEndpoint, request, CancellationToken.None);
         }
 
         public override void PublishHtml(string filePath, SourceText sourceText, int hostDocumentVersion)
@@ -163,8 +160,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
                 HostDocumentVersion = hostDocumentVersion,
             };
 
-            var result = _server.SendRequest(RazorLanguageServerCustomMessageTargets.RazorUpdateHtmlBufferEndpoint, request);
-            _ = result.ReturningVoid(CancellationToken.None);
+            _ = _server.SendNotificationAsync(LanguageServerConstants.RazorUpdateHtmlBufferEndpoint, request, CancellationToken.None);
         }
 
         private void ProjectSnapshotManager_Changed(object sender, ProjectChangeEventArgs args)

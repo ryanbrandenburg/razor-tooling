@@ -2,13 +2,13 @@
 // Licensed under the MIT license. See License.txt in the project root for license information.
 
 using System.Threading.Tasks;
+using CommonLanguageServerProtocol.Framework;
 using Microsoft.VisualStudio.LanguageServer.Protocol;
-using OmniSharp.Extensions.JsonRpc;
 
 namespace Microsoft.AspNetCore.Razor.LanguageServer.EndpointContracts.LinkedEditingRange
 {
-    [Parallel, Method(Methods.TextDocumentLinkedEditingRangeName)]
-    internal interface ILinkedEditingRangeEndpoint : IJsonRpcRequestHandler<LinkedEditingRangeParamsBridge, LinkedEditingRanges?>, IRegistrationExtension
+    [LanguageServerEndpoint(Methods.TextDocumentLinkedEditingRangeName)]
+    internal interface ILinkedEditingRangeEndpoint : IRazorRequestHandler<LinkedEditingRangeParamsBridge, LinkedEditingRanges?>, IRegistrationExtension
     {
     }
 }

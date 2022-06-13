@@ -4,8 +4,8 @@
 #nullable disable
 
 using System.Collections.Generic;
+using Microsoft.VisualStudio.LanguageServer.Protocol;
 using Newtonsoft.Json.Linq;
-using OmniSharp.Extensions.LanguageServer.Protocol.Server.Capabilities;
 
 namespace Microsoft.AspNetCore.Razor.LanguageServer
 {
@@ -32,8 +32,9 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             // in Visual Studio scenarios it will deserialize server capabilties into what it believes is "valid" and then will re-pass said
             // server capabilities to our client side code having lost the information of the custom capabilities. To avoid this we use the
             // experimental bag since it's part of the official LSP spec. This approach enables us to work with any client.
-            capabilities.Experimental ??= new Dictionary<string, JToken>();
-            capabilities.Experimental[RazorCapabilityKey] = JToken.FromObject(s_default);
+            capabilities.Experimental ??= new Dictionary<string, JToken> {
+                { RazorCapabilityKey, JToken.FromObject(s_default) }
+            };
         }
 
         public static bool TryGet(JToken token, out RazorLanguageServerCapability razorCapability)

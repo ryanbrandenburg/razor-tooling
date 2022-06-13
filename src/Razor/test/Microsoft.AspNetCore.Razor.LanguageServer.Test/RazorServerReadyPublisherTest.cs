@@ -4,14 +4,11 @@
 #nullable disable
 
 using System.Collections.Generic;
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.AspNetCore.Razor.Test.Common;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Razor.ProjectSystem;
 using Moq;
-using OmniSharp.Extensions.JsonRpc;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Razor.LanguageServer.Test
@@ -24,12 +21,8 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Test
             // Arrange
             var clientNotifierService = new Mock<ClientNotifierServiceBase>(MockBehavior.Strict);
 
-            var razorServerReadyPublisher = new RazorServerReadyPublisher(LegacyDispatcher, clientNotifierService.Object);
-
             var projectManager = TestProjectSnapshotManager.Create(LegacyDispatcher);
             projectManager.AllowNotifyListeners = true;
-
-            razorServerReadyPublisher.Initialize(projectManager);
 
             var document = TestDocumentSnapshot.Create("C:/file.cshtml");
             document.TryGetText(out var text);
@@ -45,59 +38,15 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Test
             clientNotifierService.Verify();
         }
 
-        private const string RazorServerReadyEndpoint = "razor/serverReady";
-
-        [Fact]
-        public void ProjectSnapshotManager_WorkspacePopulated_SetsUIContext()
-        {
-            // Arrange
-            var responseRouterReturns = new Mock<IResponseRouterReturns>(MockBehavior.Strict);
-            responseRouterReturns.Setup(r => r.ReturningVoid(It.IsAny<CancellationToken>()))
-                .Returns(() => Task.CompletedTask);
-
-            var clientNotifierService = new Mock<ClientNotifierServiceBase>(MockBehavior.Strict);
-            clientNotifierService.Setup(l => l.SendRequestAsync(RazorServerReadyEndpoint))
-                .Returns(Task.FromResult(responseRouterReturns.Object));
-
-            var razorServerReadyPublisher = new RazorServerReadyPublisher(LegacyDispatcher, clientNotifierService.Object);
-
-            var projectManager = TestProjectSnapshotManager.Create(LegacyDispatcher);
-            projectManager.AllowNotifyListeners = true;
-
-            razorServerReadyPublisher.Initialize(projectManager);
-
-            var document = TestDocumentSnapshot.Create("C:/file.cshtml");
-            document.TryGetText(out var text);
-            document.TryGetTextVersion(out var textVersion);
-            var textAndVersion = TextAndVersion.Create(text, textVersion);
-
-            // Act
-            projectManager.ProjectAdded(document.ProjectInternal.HostProject);
-            projectManager.ProjectWorkspaceStateChanged(document.ProjectInternal.HostProject.FilePath, CreateProjectWorkspace());
-
-            // Assert
-            clientNotifierService.VerifyAll();
-            responseRouterReturns.VerifyAll();
-        }
-
         [Fact]
         public void ProjectSnapshotManager_WorkspacePopulated_DoesNotFireTwice()
         {
             // Arrange
-            var responseRouterReturns = new Mock<IResponseRouterReturns>(MockBehavior.Strict);
-            responseRouterReturns.Setup(r => r.ReturningVoid(It.IsAny<CancellationToken>()))
-                .Returns(() => Task.CompletedTask);
-
             var clientNotifierService = new Mock<ClientNotifierServiceBase>(MockBehavior.Strict);
-            clientNotifierService.Setup(l => l.SendRequestAsync(RazorServerReadyEndpoint))
-                .Returns(Task.FromResult(responseRouterReturns.Object));
-
-            var razorServerReadyPublisher = new RazorServerReadyPublisher(LegacyDispatcher, clientNotifierService.Object);
 
             var projectManager = TestProjectSnapshotManager.Create(LegacyDispatcher);
             projectManager.AllowNotifyListeners = true;
 
-            razorServerReadyPublisher.Initialize(projectManager);
             var document = TestDocumentSnapshot.Create("C:/file.cshtml");
             document.TryGetText(out var text);
             document.TryGetTextVersion(out var textVersion);
@@ -109,13 +58,11 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Test
             projectManager.ProjectWorkspaceStateChanged(document.ProjectInternal.HostProject.FilePath, CreateProjectWorkspace());
 
             clientNotifierService.VerifyAll();
-            responseRouterReturns.VerifyAll();
 
             projectManager.ProjectWorkspaceStateChanged(document.ProjectInternal.HostProject.FilePath, CreateProjectWorkspace());
 
             // Assert
             clientNotifierService.VerifyAll();
-            responseRouterReturns.Verify(r => r.ReturningVoid(It.IsAny<CancellationToken>()), Times.Once);
         }
 
         private static ProjectWorkspaceState CreateProjectWorkspace()

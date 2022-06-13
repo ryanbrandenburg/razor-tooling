@@ -9,7 +9,6 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Razor.Language;
-using Microsoft.AspNetCore.Razor.LanguageServer.Common;
 using Microsoft.AspNetCore.Razor.LanguageServer.Extensions;
 using Microsoft.AspNetCore.Razor.LanguageServer.Formatting;
 using Microsoft.AspNetCore.Razor.LanguageServer.Protocol;
@@ -22,6 +21,7 @@ using Microsoft.CodeAnalysis.Text;
 using Microsoft.VisualStudio.LanguageServer.Protocol;
 using Xunit;
 using Xunit.Sdk;
+using LanguageServerConstants = Microsoft.AspNetCore.Razor.LanguageServer.Common.LanguageServerConstants;
 
 namespace Microsoft.AspNetCore.Razor.LanguageServer.Completion.Delegation
 {
@@ -48,7 +48,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Completion.Delegation
             HtmlCompletionParams = new DelegatedCompletionParams(documentContext.Identifier, new Position(0, 0), RazorLanguageKind.Html, new VSInternalCompletionContext(), ProvisionalTextEdit: null);
             DocumentContextFactory = new TestDocumentContextFactory();
             FormattingService = TestRazorFormattingService.Instance;
-            MappingService = new DefaultRazorDocumentMappingService(TestLanguageServerFeatureOptions.Instance, new TestDocumentContextFactory(), LoggerFactory);
+            MappingService = new DefaultRazorDocumentMappingService(TestLanguageServerFeatureOptions.Instance, new TestDocumentContextFactory(), Logger);
         }
 
         private VSInternalClientCapabilities ClientCapabilities { get; }

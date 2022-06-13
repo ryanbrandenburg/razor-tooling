@@ -7,12 +7,13 @@ using System.Collections.Immutable;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using CommonLanguageServerProtocol.Framework;
 using Microsoft.AspNetCore.Mvc.Razor.Extensions;
 using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.AspNetCore.Razor.LanguageServer;
 using Microsoft.AspNetCore.Razor.LanguageServer.Common;
-using Microsoft.AspNetCore.Razor.LanguageServer.Formatting;
-using Microsoft.AspNetCore.Razor.LanguageServer.Serialization;
+using Microsoft.AspNetCore.Razor.LanguageServer.Common.Extensions;
+using Microsoft.AspNetCore.Razor.LanguageServer.EndpointContracts;
 using Microsoft.AspNetCore.Razor.LanguageServer.Test.Common;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.ExternalAccess.Razor;
@@ -20,13 +21,49 @@ using Microsoft.CodeAnalysis.Razor;
 using Microsoft.CodeAnalysis.Razor.ProjectSystem;
 using Microsoft.CodeAnalysis.Text;
 using Microsoft.Extensions.Logging;
+using Microsoft.VisualStudio.LanguageServer.Protocol;
 using Moq;
-using OmniSharp.Extensions.LanguageServer.Protocol.Serialization;
+using Newtonsoft.Json;
 
 namespace Microsoft.AspNetCore.Razor.Test.Common
 {
     public abstract class LanguageServerTestBase
     {
+        private class NoOpLspLogger : ILspLogger
+        {
+            public static NoOpLspLogger Instance = new NoOpLspLogger();
+
+            public Task LogEndContextAsync(string message, params object[] @params)
+            {
+                return Task.CompletedTask;
+            }
+
+            public Task LogErrorAsync(string message, params object[] @params)
+            {
+                return Task.CompletedTask;
+            }
+
+            public Task LogExceptionAsync(Exception exception, string? message = null, params object[] @params)
+            {
+                return Task.CompletedTask;
+            }
+
+            public Task LogInformationAsync(string message, params object[] @params)
+            {
+                return Task.CompletedTask;
+            }
+
+            public Task LogStartContextAsync(string message, params object[] @params)
+            {
+                return Task.CompletedTask;
+            }
+
+            public Task LogWarningAsync(string message, params object[] @params)
+            {
+                return Task.CompletedTask;
+            }
+        }
+
         public LanguageServerTestBase()
         {
 #pragma warning disable CS0618 // Type or member is obsolete
@@ -37,10 +74,15 @@ namespace Microsoft.AspNetCore.Razor.Test.Common
             var logger = new Mock<ILogger>(MockBehavior.Strict).Object;
             Mock.Get(logger).Setup(l => l.Log(It.IsAny<LogLevel>(), It.IsAny<EventId>(), It.IsAny<It.IsAnyType>(), It.IsAny<Exception>(), It.IsAny<Func<It.IsAnyType, Exception?, string>>())).Verifiable();
             Mock.Get(logger).Setup(l => l.IsEnabled(It.IsAny<LogLevel>())).Returns(false);
+
             LoggerFactory = TestLoggerFactory.Instance;
-            Serializer = new LspSerializer();
-            Serializer.RegisterRazorConverters();
-            Serializer.RegisterVSInternalExtensionConverters();
+            LspLogger = NoOpLspLogger.Instance;
+            Logger = TestLogger.Instance;
+
+            Serializer = new JsonSerializer();
+            Serializer.Converters.RegisterRazorConverters();
+            Serializer.AddVSInternalExtensionConverters();
+            Serializer.AddVSExtensionConverters();
         }
 
         // This is marked as legacy because in its current form it's being assigned a "TestProjectSnapshotManagerDispatcher" which takes the
@@ -50,21 +92,37 @@ namespace Microsoft.AspNetCore.Razor.Test.Common
         // the opportunity to re-write our tests correctly.
         internal ProjectSnapshotManagerDispatcher LegacyDispatcher { get; }
 
-        internal readonly ProjectSnapshotManagerDispatcher Dispatcher = new LSPProjectSnapshotManagerDispatcher(TestLoggerFactory.Instance);
+        internal readonly ProjectSnapshotManagerDispatcher Dispatcher = new LSPProjectSnapshotManagerDispatcher();
 
         internal FilePathNormalizer FilePathNormalizer { get; }
 
+        protected JsonSerializer Serializer { get; }
+
         internal IRazorSpanMappingService SpanMappingService { get; }
 
-        protected LspSerializer Serializer { get; }
+        protected ILspLogger LspLogger { get; }
+
+        protected ILogger Logger { get; }
 
         protected ILoggerFactory LoggerFactory { get; }
+
+        internal static RazorRequestContext CreateRazorRequestContext(DocumentContext? documentContext, ILspLogger? lspLogger = null, ILogger? logger = null, ILspServices? lspServices = null)
+        {
+            lspLogger ??= TestLspLogger.Instance;
+            logger ??= TestLogger.Instance;
+            lspServices ??= new Mock<ILspServices>(MockBehavior.Strict).Object;
+
+            var requestContext = new RazorRequestContext(documentContext, lspLogger, logger, lspServices);
+
+            return requestContext;
+        }
 
         protected static RazorCodeDocument CreateCodeDocument(string text, IReadOnlyList<TagHelperDescriptor>? tagHelpers = null)
         {
             tagHelpers ??= Array.Empty<TagHelperDescriptor>();
             var sourceDocument = TestRazorSourceDocument.Create(text);
-            var projectEngine = RazorProjectEngine.Create(RazorConfiguration.Default, RazorProjectFileSystem.Create("C:/"), builder => {
+            var projectEngine = RazorProjectEngine.Create(RazorConfiguration.Default, RazorProjectFileSystem.Create("C:/"), builder =>
+            {
                 RazorExtensions.Register(builder);
             });
             var defaultImportDocument = TestRazorSourceDocument.Create(
@@ -80,6 +138,11 @@ namespace Microsoft.AspNetCore.Razor.Test.Common
         {
             var codeDocument = CreateCodeDocument(sourceText);
             return CreateDocumentContextFactory(documentPath, codeDocument);
+        }
+
+        internal static DocumentContext? CreateDocumentContext(Uri documentPath, RazorCodeDocument codeDocument, bool documentFound = true)
+        {
+            return documentFound ? TestDocumentContext.From(documentPath.GetAbsoluteOrUNCPath(), codeDocument, hostDocumentVersion: 1337) : null;
         }
 
         internal static DocumentContextFactory CreateDocumentContextFactory(

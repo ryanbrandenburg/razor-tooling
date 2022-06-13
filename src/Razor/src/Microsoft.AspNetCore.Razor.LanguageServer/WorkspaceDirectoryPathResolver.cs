@@ -3,6 +3,8 @@
 
 #nullable disable
 
+using Microsoft.CodeAnalysis.LanguageServer;
+
 namespace Microsoft.AspNetCore.Razor.LanguageServer
 {
     internal abstract class WorkspaceDirectoryPathResolver

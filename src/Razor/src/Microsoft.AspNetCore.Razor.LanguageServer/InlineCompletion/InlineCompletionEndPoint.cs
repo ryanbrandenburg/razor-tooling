@@ -10,12 +10,12 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Razor.LanguageServer.Common;
 using Microsoft.AspNetCore.Razor.LanguageServer.Common.Extensions;
 using Microsoft.AspNetCore.Razor.LanguageServer.EndpointContracts;
 using Microsoft.AspNetCore.Razor.LanguageServer.Extensions;
 using Microsoft.AspNetCore.Razor.LanguageServer.Formatting;
 using Microsoft.AspNetCore.Razor.LanguageServer.Protocol;
+using Microsoft.CodeAnalysis.Razor.Workspaces;
 using Microsoft.CodeAnalysis.Text;
 using Microsoft.Extensions.Logging;
 using Microsoft.VisualStudio.LanguageServer.Protocol;
@@ -34,6 +34,8 @@ internal class InlineCompletionEndpoint : IVSInlineCompletionEndpoint
     private readonly ClientNotifierServiceBase _languageServer;
     private readonly AdhocWorkspaceFactory _adhocWorkspaceFactory;
     private readonly ILogger _logger;
+
+    public bool MutatesSolutionState => false;
 
     [ImportingConstructor]
     public InlineCompletionEndpoint(
@@ -75,7 +77,7 @@ internal class InlineCompletionEndpoint : IVSInlineCompletionEndpoint
         _logger = loggerFactory.CreateLogger<InlineCompletionEndpoint>();
     }
 
-    public RegistrationExtensionResult? GetRegistration(VSInternalClientCapabilities clientCapabilities)
+    public RegistrationExtensionResult? GetRegistration(ClientCapabilities clientCapabilities)
     {
         const string AssociatedServerCapability = "_vs_inlineCompletionOptions";
 
@@ -87,7 +89,7 @@ internal class InlineCompletionEndpoint : IVSInlineCompletionEndpoint
         return new RegistrationExtensionResult(AssociatedServerCapability, registrationOptions);
     }
 
-    public async Task<VSInternalInlineCompletionList?> Handle(VSInternalInlineCompletionRequestBridge request, CancellationToken cancellationToken)
+    public async Task<VSInternalInlineCompletionList?> HandleRequestAsync(VSInternalInlineCompletionRequestBridge request, RazorRequestContext requestContext, CancellationToken cancellationToken)
     {
         if (request is null)
         {
@@ -132,9 +134,11 @@ internal class InlineCompletionEndpoint : IVSInlineCompletionEndpoint
         };
 
         request.Position = projectedPosition;
-        var response = await _languageServer.SendRequestAsync(RazorLanguageServerCustomMessageTargets.RazorInlineCompletionEndpoint, razorRequest).ConfigureAwait(false);
-        var list = await response.Returning<VSInternalInlineCompletionList>(cancellationToken).ConfigureAwait(false);
-        if (list == null || !list.Items.Any())
+        var list = await _languageServer.SendRequestAsync<RazorInlineCompletionRequest, VSInternalInlineCompletionList?>(
+            LanguageServerConstants.RazorInlineCompletionEndpoint,
+            razorRequest,
+            cancellationToken).ConfigureAwait(false);
+        if (list is null || !list.Items.Any())
         {
             _logger.LogInformation("Did not get any inline completions from delegation.");
             return null;
@@ -223,6 +227,11 @@ internal class InlineCompletionEndpoint : IVSInlineCompletionEndpoint
         var newSnippetSourceText = snippetSourceText.WithChanges(indentationChanges);
         newSnippetText = newSnippetSourceText.ToString();
         return true;
+    }
+
+    public object? GetTextDocumentIdentifier(VSInternalInlineCompletionRequestBridge request)
+    {
+        return request.TextDocument;
     }
 }
 

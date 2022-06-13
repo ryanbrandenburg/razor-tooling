@@ -14,6 +14,7 @@ using Microsoft.AspNetCore.Razor.OmniSharpPlugin;
 using Microsoft.Build.Execution;
 using Microsoft.Extensions.Logging;
 using OmniSharp.MSBuild.Notification;
+using LanguageServerConstants = Microsoft.AspNetCore.Razor.LanguageServer.Common.LanguageServerConstants;
 
 namespace Microsoft.AspNetCore.Razor.OmnisharpPlugin
 {

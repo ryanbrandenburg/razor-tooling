@@ -17,18 +17,18 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
         private readonly ProjectSnapshotManagerDispatcher _projectSnapshotManagerDispatcher;
         private readonly DocumentResolver _documentResolver;
         private readonly DocumentVersionCache _documentVersionCache;
-        private readonly ILogger<DefaultDocumentContextFactory> _logger;
+        private readonly ILogger _logger;
 
         public DefaultDocumentContextFactory(
             ProjectSnapshotManagerDispatcher projectSnapshotManagerDispatcher,
             DocumentResolver documentResolver,
             DocumentVersionCache documentVersionCache,
-            ILoggerFactory loggerFactory)
+            ILogger logger)
         {
-            _projectSnapshotManagerDispatcher = projectSnapshotManagerDispatcher;
-            _documentResolver = documentResolver;
-            _documentVersionCache = documentVersionCache;
-            _logger = loggerFactory.CreateLogger<DefaultDocumentContextFactory>();
+            _projectSnapshotManagerDispatcher = projectSnapshotManagerDispatcher ?? throw new ArgumentNullException(nameof(projectSnapshotManagerDispatcher));
+            _documentResolver = documentResolver ?? throw new ArgumentNullException(nameof(documentResolver));
+            _documentVersionCache = documentVersionCache ?? throw new ArgumentNullException(nameof(documentVersionCache));
+            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
         public override async Task<DocumentContext?> TryCreateAsync(Uri documentUri, CancellationToken cancellationToken)

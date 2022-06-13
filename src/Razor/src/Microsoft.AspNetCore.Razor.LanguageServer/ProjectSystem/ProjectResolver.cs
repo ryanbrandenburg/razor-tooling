@@ -3,11 +3,12 @@
 
 #nullable disable
 
+using Microsoft.CodeAnalysis.LanguageServer;
 using Microsoft.CodeAnalysis.Razor.ProjectSystem;
 
 namespace Microsoft.AspNetCore.Razor.LanguageServer.ProjectSystem
 {
-    internal abstract class ProjectResolver
+    internal abstract class ProjectResolver 
     {
         public abstract bool TryResolveProject(string documentFilePath, out ProjectSnapshot projectSnapshot, bool enforceDocumentInProject = true);
 

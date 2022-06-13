@@ -31,11 +31,12 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
         {
             // Arrange
             var optionsMonitor = new TestRazorLSPOptionsMonitor(ConfigurationService, Cache);
-            var endpoint = new RazorConfigurationEndpoint(optionsMonitor, LoggerFactory);
+            var endpoint = new RazorConfigurationEndpoint(optionsMonitor);
             var request = new DidChangeConfigurationParamsBridge();
+            var requestContext = CreateRazorRequestContext(documentContext: null);
 
             // Act
-            await endpoint.Handle(request, CancellationToken.None);
+            await endpoint.HandleNotificationAsync(request, requestContext, CancellationToken.None);
 
             // Assert
             Assert.True(optionsMonitor.Called, "UpdateAsync was not called.");

@@ -1,13 +1,13 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the MIT license. See License.txt in the project root for license information.
 
-using Microsoft.AspNetCore.Razor.LanguageServer.Common;
+using CommonLanguageServerProtocol.Framework;
 using Microsoft.AspNetCore.Razor.LanguageServer.Protocol;
-using OmniSharp.Extensions.JsonRpc;
+using Microsoft.CodeAnalysis.Razor.Workspaces;
 
 namespace Microsoft.AspNetCore.Razor.LanguageServer.EndpointContracts.Debugging;
 
-[Parallel, Method(LanguageServerConstants.RazorProximityExpressionsEndpoint)]
-internal interface IRazorProximityExpressionsEndpoint : IJsonRpcRequestHandler<RazorProximityExpressionsParamsBridge, RazorProximityExpressionsResponse?>
+[LanguageServerEndpoint(LanguageServerConstants.RazorProximityExpressionsEndpoint)]
+internal interface IRazorProximityExpressionsEndpoint : IRazorRequestHandler<RazorProximityExpressionsParamsBridge, RazorProximityExpressionsResponse?>
 {
 }

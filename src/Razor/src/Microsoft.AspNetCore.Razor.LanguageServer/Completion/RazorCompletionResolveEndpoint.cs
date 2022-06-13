@@ -6,6 +6,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Razor.LanguageServer.EndpointContracts;
+using Microsoft.AspNetCore.Razor.LanguageServer.Extensions;
 using Microsoft.VisualStudio.LanguageServer.Protocol;
 
 namespace Microsoft.AspNetCore.Razor.LanguageServer.Completion
@@ -24,13 +25,20 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Completion
             _completionListCache = completionListCache;
         }
 
-        public RegistrationExtensionResult? GetRegistration(VSInternalClientCapabilities clientCapabilities)
+        public bool MutatesSolutionState => false;
+
+        public RegistrationExtensionResult? GetRegistration(ClientCapabilities clientCapabilities)
         {
-            _clientCapabilities = clientCapabilities;
+            _clientCapabilities = clientCapabilities.ToVSInternalClientCapabilities();
             return null;
         }
 
-        public async Task<VSInternalCompletionItem> Handle(VSCompletionItemBridge completionItemBridge, CancellationToken cancellationToken)
+        public object? GetTextDocumentIdentifier(VSCompletionItemBridge request)
+        {
+            return null;
+        }
+
+        public async Task<VSInternalCompletionItem> HandleRequestAsync(VSCompletionItemBridge completionItemBridge, RazorRequestContext requestContext, CancellationToken cancellationToken)
         {
             VSInternalCompletionItem completionItem = completionItemBridge;
 

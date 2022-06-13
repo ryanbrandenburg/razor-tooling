@@ -10,8 +10,7 @@ using Microsoft.AspNetCore.Razor.Language.Syntax;
 
 namespace Microsoft.VisualStudio.Editor.Razor
 {
-    [Shared]
-    [Export(typeof(TagHelperFactsService))]
+    [Export(typeof(TagHelperFactsService)), Shared]
     internal class DefaultTagHelperFactsService : TagHelperFactsService
     {
         public override TagHelperBinding? GetTagHelperBinding(

@@ -4,8 +4,8 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Razor.LanguageServer.Common;
 using Microsoft.AspNetCore.Razor.LanguageServer.EndpointContracts;
+using Microsoft.CodeAnalysis.Razor.Workspaces;
 using Microsoft.VisualStudio.LanguageServer.Protocol;
 
 namespace Microsoft.AspNetCore.Razor.LanguageServer.DocumentColor
@@ -24,18 +24,27 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.DocumentColor
             _languageServer = languageServer;
         }
 
-        public RegistrationExtensionResult? GetRegistration(VSInternalClientCapabilities clientCapabilities)
+        public bool MutatesSolutionState => false;
+
+        public RegistrationExtensionResult? GetRegistration(ClientCapabilities clientCapabilities)
         {
             const string ServerCapabilities = "colorProvider";
-            var options = new DocumentColorOptions();
+            var options = new SumType<bool, DocumentColorOptions>(new DocumentColorOptions());
 
             return new RegistrationExtensionResult(ServerCapabilities, options);
         }
 
-        public async Task<ColorInformation[]> Handle(DocumentColorParamsBridge request, CancellationToken cancellationToken)
+        public object? GetTextDocumentIdentifier(DocumentColorParamsBridge request)
         {
-            var delegatedRequest = await _languageServer.SendRequestAsync(RazorLanguageServerCustomMessageTargets.RazorProvideHtmlDocumentColorEndpoint, request).ConfigureAwait(false);
-            var documentColors = await delegatedRequest.Returning<ColorInformation[]>(cancellationToken).ConfigureAwait(false);
+            return request.TextDocument;
+        }
+
+        public async Task<ColorInformation[]> HandleRequestAsync(DocumentColorParamsBridge request, RazorRequestContext requestContext, CancellationToken cancellationToken)
+        {
+            var documentColors = await _languageServer.SendRequestAsync<DocumentColorParams, ColorInformation[]>(
+                LanguageServerConstants.RazorProvideHtmlDocumentColorEndpoint,
+                request,
+                cancellationToken).ConfigureAwait(false);
 
             if (documentColors is null)
             {

@@ -38,7 +38,10 @@
     <PackageReference Include="Microsoft.WebTools.Languages.Css" Version="$(MicrosoftWebToolsLanguagesHtmlPackageVersion)" PrivateAssets="all" ExcludeAssets="all" NoWarn="NU1701" />
     <PackageReference Include="Microsoft.WebTools.Languages.Css.Editor" Version="$(MicrosoftWebToolsLanguagesHtmlPackageVersion)" PrivateAssets="all" ExcludeAssets="all" NoWarn="NU1701" />
     <PackageReference Include="Microsoft.WebTools.Languages.Html.Editor" Version="$(MicrosoftWebToolsLanguagesHtmlPackageVersion)" PrivateAssets="all" ExcludeAssets="all" NoWarn="NU1701" />
-
+    <!-- Needed transitively for Html.Editor -->
+    <PackageReference Include="OmniSharp.Extensions.JsonRpc" Version="0.19.5" />
+    <PackageReference Include="OmniSharp.Extensions.LanguageProtocol" Version="0.19.5" />
+    
     <!--
       Pinning packages to avoid misaligned reference CI failures.
       CI builds here: https://github.com/dotnet/razor-tooling/issues/4327
@@ -54,6 +57,10 @@
 
   <ItemGroup>
     <EmbeddedResource Include="Semantic\TestFiles\**\*" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Extensions\" />
   </ItemGroup>
 
 </Project>

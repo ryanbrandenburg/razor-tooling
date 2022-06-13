@@ -5,7 +5,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
-//using Castle.Core.Logging;
+using System.Threading.Tasks;
+using CommonLanguageServerProtocol.Framework;
 using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.AspNetCore.Razor.Language.Components;
 using Microsoft.AspNetCore.Razor.Test.Common;
@@ -21,6 +22,41 @@ using RazorTagHelperCompletionService = Microsoft.VisualStudio.Editor.Razor.TagH
 
 namespace Microsoft.AspNetCore.Razor.LanguageServer.Completion
 {
+    public class NullLspLogger : ILspLogger
+    {
+        public static NullLspLogger Instance = new NullLspLogger();
+
+        public Task LogEndContextAsync(string message, params object[] @params)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task LogErrorAsync(string message, params object[] @params)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task LogExceptionAsync(Exception exception, string? message = null, params object[] @params)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task LogInformationAsync(string message, params object[] @params)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task LogStartContextAsync(string message, params object[] @params)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task LogWarningAsync(string message, params object[] @params)
+        {
+            throw new NotImplementedException();
+        }
+    }
+
     public abstract class TagHelperServiceTestBase : LanguageServerTestBase
     {
         protected const string CSHtmlFile = "test.cshtml";
@@ -203,6 +239,8 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Completion
         protected TagHelperFactsService TagHelperFactsService { get; }
 
         protected ILogger Logger { get; } = NullLogger.Instance;
+
+        protected ILspLogger LspLogger { get; } = NullLspLogger.Instance;
 
         internal static RazorCodeDocument CreateCodeDocument(string text, bool isRazorFile, params TagHelperDescriptor[] tagHelpers)
         {

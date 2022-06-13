@@ -1,14 +1,14 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the MIT license. See License.txt in the project root for license information.
 
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Razor.LanguageServer.Common;
-using OmniSharp.Extensions.JsonRpc;
+using CommonLanguageServerProtocol.Framework;
+using Microsoft.AspNetCore.Razor.LanguageServer.EndpointContracts;
+using Microsoft.CodeAnalysis.Razor.Workspaces;
 
 namespace Microsoft.AspNetCore.Razor.LanguageServer
 {
-    [Parallel, Method(LanguageServerConstants.RazorMonitorProjectConfigurationFilePathEndpoint)]
-    internal interface IMonitorProjectConfigurationFilePathHandler : IJsonRpcNotificationHandler<MonitorProjectConfigurationFilePathParams>
+    [LanguageServerEndpoint(LanguageServerConstants.RazorMonitorProjectConfigurationFilePathEndpoint)]
+    internal interface IMonitorProjectConfigurationFilePathHandler : IRazorNotificationHandler<MonitorProjectConfigurationFilePathParams>
     {
     }
 }

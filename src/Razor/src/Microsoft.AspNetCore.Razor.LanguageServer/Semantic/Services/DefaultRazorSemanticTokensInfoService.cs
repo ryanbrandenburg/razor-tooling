@@ -9,62 +9,30 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Razor.Language;
-using Microsoft.AspNetCore.Razor.LanguageServer.Common;
 using Microsoft.AspNetCore.Razor.LanguageServer.Extensions;
 using Microsoft.AspNetCore.Razor.LanguageServer.Semantic.Models;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Razor;
+using Microsoft.CodeAnalysis.Razor.Workspaces;
 using Microsoft.CodeAnalysis.Razor.Workspaces.Extensions;
-using Microsoft.Extensions.Logging;
 using Microsoft.VisualStudio.LanguageServer.Protocol;
 
 namespace Microsoft.AspNetCore.Razor.LanguageServer.Semantic
 {
     internal class DefaultRazorSemanticTokensInfoService : RazorSemanticTokensInfoService
     {
+        private readonly RazorDocumentMappingService _documentMappingService;
+        private readonly ClientNotifierServiceBase _languageServer;
+
+        public DefaultRazorSemanticTokensInfoService(ClientNotifierServiceBase languageServer, RazorDocumentMappingService documentMappingService)
+        {
+            _documentMappingService = documentMappingService;
+            _languageServer = languageServer;
+        }
+
         private const int TokenSize = 5;
 
-        private readonly ClientNotifierServiceBase _languageServer;
-        private readonly RazorDocumentMappingService _documentMappingService;
-        private readonly DocumentContextFactory _documentContextFactory;
-        private readonly ILogger _logger;
-
-        public DefaultRazorSemanticTokensInfoService(
-            ClientNotifierServiceBase languageServer,
-            RazorDocumentMappingService documentMappingService,
-            DocumentContextFactory documentContextFactory,
-            ILoggerFactory loggerFactory)
-        {
-            _languageServer = languageServer ?? throw new ArgumentNullException(nameof(languageServer));
-            _documentMappingService = documentMappingService ?? throw new ArgumentNullException(nameof(documentMappingService));
-            _documentContextFactory = documentContextFactory ?? throw new ArgumentNullException(nameof(documentContextFactory));
-
-            if (loggerFactory is null)
-            {
-                throw new ArgumentNullException(nameof(loggerFactory));
-            }
-
-            _logger = loggerFactory.CreateLogger<DefaultRazorSemanticTokensInfoService>();
-        }
-
         public override async Task<SemanticTokens?> GetSemanticTokensAsync(
-            TextDocumentIdentifier textDocumentIdentifier,
-            Range range,
-            CancellationToken cancellationToken)
-        {
-            var documentContext = await _documentContextFactory.TryCreateAsync(textDocumentIdentifier.Uri, cancellationToken).ConfigureAwait(false);
-            if (documentContext is null)
-            {
-                return null;
-            }
-
-            var tokens = await GetSemanticTokensAsync(
-                textDocumentIdentifier, range, documentContext, cancellationToken);
-            return tokens;
-        }
-
-        // Internal for benchmarks
-        internal async Task<SemanticTokens?> GetSemanticTokensAsync(
             TextDocumentIdentifier textDocumentIdentifier,
             Range range,
             DocumentContext documentContext,
@@ -81,9 +49,9 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Semantic
                 csharpSemanticRanges = await GetCSharpSemanticRangesAsync(
                     codeDocument, textDocumentIdentifier, range, documentContext.Version, cancellationToken).ConfigureAwait(false);
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                _logger.LogError(ex, "Error thrown while retrieving CSharp semantic range");
+                //_logger.TraceError($"Error thrown while retrieving CSharp semantic range: {ex}");
             }
 
             var combinedSemanticRanges = CombineSemanticRanges(razorSemanticRanges, csharpSemanticRanges);
@@ -93,7 +61,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Semantic
             // We return null (which to the LSP is a no-op) to prevent flashing of CSharp elements.
             if (combinedSemanticRanges is null)
             {
-                _logger.LogWarning("Incomplete view of document. C# may be ahead of us in document versions.");
+                //_logger.TraceWarning("Incomplete view of document. C# may be ahead of us in document versions.");
                 return null;
             }
 
@@ -153,7 +121,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Semantic
             // `GetMatchingCSharpResponseAsync` that will cause us to retry in a bit.
             if (csharpResponse is null)
             {
-                _logger.LogWarning("Issue with retrieving C# response for Razor range: {razorRange}", razorRange);
+                //_logger.TraceWarning($"Issue with retrieving C# response for Razor range: {razorRange}");
                 return null;
             }
 
@@ -240,8 +208,11 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Semantic
             CancellationToken cancellationToken)
         {
             var parameter = new ProvideSemanticTokensRangeParams(textDocumentIdentifier, documentVersion, csharpRange);
-            var request = await _languageServer.SendRequestAsync(RazorLanguageServerCustomMessageTargets.RazorProvideSemanticTokensRangeEndpoint, parameter);
-            var csharpResponse = await request.Returning<ProvideSemanticTokensResponse>(cancellationToken);
+
+            var csharpResponse = await _languageServer.SendRequestAsync<ProvideSemanticTokensRangeParams, ProvideSemanticTokensResponse>(
+                LanguageServerConstants.RazorProvideSemanticTokensRangeEndpoint,
+                parameter,
+                cancellationToken);
 
             if (csharpResponse is null)
             {

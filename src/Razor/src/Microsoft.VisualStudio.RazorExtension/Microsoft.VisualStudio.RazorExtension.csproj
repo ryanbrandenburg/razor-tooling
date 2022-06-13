@@ -138,25 +138,16 @@
       NOTE: Adding OSS components to this list must be reviewed against our component governance standards. For now this is a curated list. You can read more about the CG process at https://aka.ms/component-governance
     ***************************************************************************************************************************************
     -->
-    <RazorNgendVSIXSourceItem Include="$(OutputPath)MediatR.dll" />
-    <RazorNgendVSIXSourceItem Include="$(OutputPath)OmniSharp.Extensions.JsonRpc.dll" />
-    <RazorNgendVSIXSourceItem Include="$(OutputPath)OmniSharp.Extensions.LanguageProtocol.dll" />
-    <RazorNgendVSIXSourceItem Include="$(OutputPath)OmniSharp.Extensions.LanguageServer.dll" />
-    <RazorNgendVSIXSourceItem Include="$(OutputPath)OmniSharp.Extensions.LanguageServer.Shared.dll" />
     <RazorNgendVSIXSourceItem Include="$(OutputPath)Microsoft.Extensions.Options.dll" />
-    <RazorNgendVSIXSourceItem Include="$(OutputPath)Microsoft.Extensions.Options.ConfigurationExtensions.dll" />
     <RazorNgendVSIXSourceItem Include="$(OutputPath)Microsoft.Extensions.Primitives.dll" />
     <RazorNgendVSIXSourceItem Include="$(OutputPath)Microsoft.Extensions.DependencyInjection.dll" />
     <RazorNgendVSIXSourceItem Include="$(OutputPath)Microsoft.Extensions.DependencyInjection.Abstractions.dll" />
     <RazorNgendVSIXSourceItem Include="$(OutputPath)Microsoft.Extensions.Configuration.dll" />
     <RazorNgendVSIXSourceItem Include="$(OutputPath)Microsoft.Extensions.Configuration.Abstractions.dll" />
-    <RazorNgendVSIXSourceItem Include="$(OutputPath)Microsoft.Extensions.Configuration.Binder.dll" />
     <RazorNgendVSIXSourceItem Include="$(OutputPath)Microsoft.Extensions.Logging.dll" />
     <RazorNgendVSIXSourceItem Include="$(OutputPath)Microsoft.Extensions.Logging.Abstractions.dll" />
     <RazorNgendVSIXSourceItem Include="$(OutputPath)System.IO.Pipelines.dll" />
-    <RazorNgendVSIXSourceItem Include="$(OutputPath)System.Reactive.dll" />
     <RazorNgendVSIXSourceItem Include="$(OutputPath)System.Runtime.CompilerServices.Unsafe.dll" />
-    <RazorNgendVSIXSourceItem Include="$(OutputPath)System.Threading.Channels.dll" />
 
     <VSIXSourceItem Include="$(OutputPath)Microsoft.VisualStudio.LanguageServer.Protocol.dll" />
     <VSIXSourceItem Include="$(OutputPath)Microsoft.VisualStudio.LanguageServer.Protocol.Extensions.dll" />
@@ -205,7 +196,6 @@
       <!-- Disable NGEN. Core assemblies are crossgened. -->
       <Ngen>false</Ngen>
     </ProjectReference>
-
     <ProjectReference Include="..\Microsoft.VisualStudio.Editor.Razor\Microsoft.VisualStudio.Editor.Razor.csproj" />
     <ProjectReference Include="..\Microsoft.VisualStudio.LanguageServer.ContainedLanguage\Microsoft.VisualStudio.LanguageServer.ContainedLanguage.csproj" />
     <ProjectReference Include="..\Microsoft.VisualStudio.LanguageServices.Razor\Microsoft.VisualStudio.LanguageServices.Razor.csproj" />
@@ -220,14 +210,14 @@
     <PackageReference Include="Microsoft.AspNetCore.Mvc.Razor.Extensions.Tooling.Internal" Version="$(MicrosoftAspNetCoreMvcRazorExtensionsToolingInternalPackageVersion)" />
     <PackageReference Include="Microsoft.AspNetCore.Mvc.Razor.Extensions.Version1_X.Internal.Transport" Version="$(MicrosoftAspNetCoreMvcRazorExtensionsVersion1_XInternalTransportPackageVersion)" />
     <PackageReference Include="Microsoft.AspNetCore.Mvc.Razor.Extensions.Version2_X.Internal.Transport" Version="$(MicrosoftAspNetCoreMvcRazorExtensionsVersion2_XInternalTransportPackageVersion)" />
+    <PackageReference Include="Microsoft.CodeAnalysis.EditorFeatures.Wpf" Version="$(RoslynPackageVersion)" />
     <PackageReference Include="Microsoft.CodeAnalysis.Razor.Tooling.Internal" Version="$(MicrosoftCodeAnalysisRazorToolingInternalPackageVersion)" />
     <PackageReference Include="Microsoft.NET.Sdk.Razor" Version="$(MicrosoftNETSdkRazorPackageVersion)" IncludeAssets="None" PrivateAssets="All" GeneratePathProperty="true" />
     <PackageReference Include="System.Resources.Extensions" Version="$(SystemResourcesExtensionsPackageVersion)" />
     <PackageReference Include="Microsoft.VisualStudio.Shell.15.0" Version="$(MicrosoftVisualStudioShell150PackageVersion)" />
 
-    <!-- We need to directly reference the O# language server here because we mark it as PrivateAssets="All" in our language server itself -->
-    <PackageReference Include="OmniSharp.Extensions.LanguageServer" Version="$(OmniSharpExtensionsLanguageServerPackageVersion)" />
-
+    <PackageReference Include="Microsoft.CodeAnalysis.LanguageServer.Protocol" Version="$(RoslynPackageVersion)" />
+    <PackageReference Include="Microsoft.CodeAnalysis.Workspaces.Common" Version="$(RoslynPackageVersion)" />
     <!--
       Pinning packages to avoid misaligned reference CI failures.
       CI builds here: https://github.com/dotnet/razor-tooling/issues/4327

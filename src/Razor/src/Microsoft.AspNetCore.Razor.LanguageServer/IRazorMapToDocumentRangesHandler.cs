@@ -1,13 +1,14 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the MIT license. See License.txt in the project root for license information.
 
-using Microsoft.AspNetCore.Razor.LanguageServer.Common;
-using OmniSharp.Extensions.JsonRpc;
+using CommonLanguageServerProtocol.Framework;
+using Microsoft.AspNetCore.Razor.LanguageServer.EndpointContracts;
+using Microsoft.CodeAnalysis.Razor.Workspaces;
 
 namespace Microsoft.AspNetCore.Razor.LanguageServer
 {
-    [Parallel, Method(LanguageServerConstants.RazorMapToDocumentRangesEndpoint)]
-    internal interface IRazorMapToDocumentRangesHandler : IJsonRpcRequestHandler<RazorMapToDocumentRangesParams, RazorMapToDocumentRangesResponse?>
+    [LanguageServerEndpoint(LanguageServerConstants.RazorMapToDocumentRangesEndpoint)]
+    internal interface IRazorMapToDocumentRangesHandler : IRazorRequestHandler<RazorMapToDocumentRangesParams, RazorMapToDocumentRangesResponse?>
     {
     }
 }

@@ -42,7 +42,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Refactoring
             RazorDocumentMappingService documentMappingService,
             ClientNotifierServiceBase languageServer,
             ILoggerFactory loggerFactory)
-            : base(documentContextFactory, languageServerFeatureOptions, documentMappingService, languageServer, loggerFactory.CreateLogger<RenameEndpoint>())
+            : base(languageServerFeatureOptions, documentMappingService, languageServer, loggerFactory.CreateLogger<RenameEndpoint>())
         {
             _projectSnapshotManagerDispatcher = projectSnapshotManagerDispatcher ?? throw new ArgumentNullException(nameof(projectSnapshotManagerDispatcher));
             _documentContextFactory = documentContextFactory ?? throw new ArgumentNullException(nameof(documentContextFactory));
@@ -52,7 +52,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Refactoring
             _documentMappingService = documentMappingService ?? throw new ArgumentNullException(nameof(documentMappingService));
         }
 
-        public RegistrationExtensionResult? GetRegistration(VSInternalClientCapabilities clientCapabilities)
+        public RegistrationExtensionResult? GetRegistration(ClientCapabilities clientCapabilities)
         {
             const string ServerCapability = "renameProvider";
             var options = new RenameOptions
@@ -60,15 +60,19 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Refactoring
                 PrepareProvider = false,
             };
 
-            return new RegistrationExtensionResult(ServerCapability, options);
+            return new RegistrationExtensionResult(ServerCapability, new SumType<bool, RenameOptions>(options));
         }
 
         /// <inheritdoc/>
         protected override string CustomMessageTarget => RazorLanguageServerCustomMessageTargets.RazorRenameEndpointName;
 
+        public override bool MutatesSolutionState => false;
+
         /// <inheritdoc/>
-        protected override async Task<WorkspaceEdit?> TryHandleAsync(RenameParamsBridge request, DocumentContext documentContext, Projection projection, CancellationToken cancellationToken)
+        protected override async Task<WorkspaceEdit?> TryHandleAsync(RenameParamsBridge request, RazorRequestContext requestContext, Projection projection, CancellationToken cancellationToken)
         {
+            requestContext.RequireDocumentContext();
+            var documentContext = requestContext.DocumentContext;
             // We only support renaming of .razor components, not .cshtml tag helpers
             if (!FileKinds.IsComponent(documentContext.FileKind))
             {
@@ -89,17 +93,28 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Refactoring
 
         /// <inheritdoc/>
         protected override IDelegatedParams CreateDelegatedParams(RenameParamsBridge request, DocumentContext documentContext, Projection projection, CancellationToken cancellationToken)
-            => new DelegatedRenameParams(
+        {
+            razorRequestContext.RequireDocumentContext();
+            var documentContext = razorRequestContext.DocumentContext;
+            return new DelegatedRenameParams(
                     documentContext.Identifier,
                     projection.Position,
                     projection.LanguageKind,
                     request.NewName);
+        }
 
         /// <inheritdoc/>
-        protected override Task<WorkspaceEdit> HandleDelegatedResponseAsync(WorkspaceEdit response, DocumentContext documentContext, CancellationToken cancellationToken)
-            => _documentMappingService.RemapWorkspaceEditAsync(response, cancellationToken);
+        protected override async Task<WorkspaceEdit?> HandleDelegatedResponseAsync(WorkspaceEdit? response, RazorRequestContext reqeuestContext, CancellationToken cancellationToken)
+        {
+            if (response is null)
+            {
+                return null;
+            }
 
-        private async Task<WorkspaceEdit?> TryGetRazorComponentRenameEditsAsync(RenameParamsBridge request, int absoluteIndex, DocumentContext documentContext, CancellationToken cancellationToken)
+            return await _documentMappingService.RemapWorkspaceEditAsync(response, cancellationToken);
+        }
+
+        private async Task<WorkspaceEdit?> TryGetRazorComponentRenameEditsAsync(RenameParamsBridge request, DocumentContextFactory documentContextFactory, int absoluteIndex, DocumentSnapshot requestDocumentSnapshot, RazorCodeDocument codeDocument, CancellationToken cancellationToken)
         {
             var codeDocument = await documentContext.GetCodeDocumentAsync(cancellationToken);
 
@@ -126,6 +141,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Refactoring
             AddEditsForCodeDocument(documentChanges, originTagHelpers, request.NewName, request.TextDocument.Uri, codeDocument);
 
             var documentSnapshots = await GetAllDocumentSnapshotsAsync(documentContext, cancellationToken).ConfigureAwait(false);
+
             foreach (var documentSnapshot in documentSnapshots)
             {
                 await AddEditsForCodeDocumentAsync(documentChanges, originTagHelpers, request.NewName, documentSnapshot);
@@ -165,7 +181,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Refactoring
                         }
 
                         // Add to the list and add the path to the set
-                        var documentContext = await _documentContextFactory.TryCreateAsync(new Uri(documentPath), cancellationToken);
+                        var documentContext = await documentContextFactory.TryCreateAsync(new Uri(documentPath), cancellationToken);
                         if (documentContext is null)
                         {
                             throw new NotImplementedException($"{documentPath} in project {project.FilePath} but not retrievable");

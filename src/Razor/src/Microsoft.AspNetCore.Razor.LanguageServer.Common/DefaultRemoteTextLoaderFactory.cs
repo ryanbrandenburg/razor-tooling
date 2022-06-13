@@ -4,6 +4,7 @@
 #nullable disable
 
 using System;
+using System.Composition;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
@@ -16,6 +17,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Common
     {
         private readonly FilePathNormalizer _filePathNormalizer;
 
+        [ImportingConstructor]
         public DefaultRemoteTextLoaderFactory(
             FilePathNormalizer filePathNormalizer)
         {

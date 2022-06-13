@@ -7,8 +7,8 @@ using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Razor.LanguageServer.CodeActions.Models;
-using Microsoft.AspNetCore.Razor.LanguageServer.Common;
 using Microsoft.AspNetCore.Razor.LanguageServer.EndpointContracts;
+using Microsoft.CodeAnalysis.Razor.Workspaces;
 using Microsoft.Extensions.Logging;
 using Microsoft.VisualStudio.LanguageServer.Protocol;
 using Newtonsoft.Json.Linq;
@@ -20,6 +20,8 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.CodeActions
         private readonly IReadOnlyDictionary<string, RazorCodeActionResolver> _razorCodeActionResolvers;
         private readonly IReadOnlyDictionary<string, CSharpCodeActionResolver> _csharpCodeActionResolvers;
         private readonly ILogger _logger;
+
+        public bool MutatesSolutionState => false;
 
         public CodeActionResolutionEndpoint(
             IEnumerable<RazorCodeActionResolver> razorCodeActionResolvers,
@@ -47,7 +49,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.CodeActions
             _csharpCodeActionResolvers = CreateResolverMap(csharpCodeActionResolvers);
         }
 
-        public async Task<CodeAction> Handle(CodeActionBridge request, CancellationToken cancellationToken)
+        public async Task<CodeAction> HandleRequestAsync(CodeActionBridge request, RazorRequestContext requestContext, CancellationToken cancellationToken)
         {
             if (request is null)
             {
@@ -173,5 +175,10 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.CodeActions
 
         private static string GetCodeActionId(RazorCodeActionResolutionParams resolutionParams) =>
             $"`{resolutionParams.Language}.{resolutionParams.Action}`";
+
+        public object? GetTextDocumentIdentifier(CodeActionBridge request)
+        {
+            return null;
+        }
     }
 }

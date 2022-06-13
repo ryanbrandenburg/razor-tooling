@@ -7,8 +7,8 @@ using System.ComponentModel.Composition;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Razor.LanguageServer;
-using Microsoft.AspNetCore.Razor.LanguageServer.Common;
 using Microsoft.CodeAnalysis.Host;
+using Microsoft.CodeAnalysis.Razor;
 using Microsoft.CodeAnalysis.Razor.ProjectSystem;
 using Microsoft.CodeAnalysis.Razor.Workspaces;
 using Microsoft.Extensions.DependencyInjection;
@@ -21,6 +21,7 @@ using Microsoft.VisualStudio.Threading;
 using Microsoft.VisualStudio.Utilities;
 using Nerdbank.Streams;
 using StreamJsonRpc;
+using static Microsoft.AspNetCore.Razor.LanguageServer.RazorLanguageServerTarget;
 using Task = System.Threading.Tasks.Task;
 using Trace = Microsoft.AspNetCore.Razor.LanguageServer.Trace;
 
@@ -28,7 +29,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
 {
     [Export(typeof(ILanguageClient))]
     [ContentType(RazorConstants.RazorLSPContentTypeName)]
-    internal class RazorLanguageServerClient : ILanguageClient, ILanguageClientCustomMessage2, ILanguageClientPriority
+    internal class RazorLanguageServerClient : ILanguageClientCustomMessage2, ILanguageClientPriority
     {
         private const string LogFileIdentifier = "Razor.RazorLanguageServerClient";
 
@@ -43,6 +44,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
         private RazorLanguageServer? _server;
         private IDisposable? _serverShutdownDisposable;
         private LogHubLoggerProvider? _loggerProvider;
+        private readonly ProjectSnapshotManagerDispatcher _projectSnapshotManagerDispatcher;
 
         private const string RazorLSPLogLevel = "RAZOR_TRACE";
 
@@ -54,6 +56,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
             ProjectConfigurationFilePathStore projectConfigurationFilePathStore,
             RazorLanguageServerLogHubLoggerProviderFactory logHubLoggerProviderFactory,
             LanguageServerFeatureOptions languageServerFeatureOptions,
+            ProjectSnapshotManagerDispatcher projectSnapshotManagerDispatcher,
             [Import(AllowDefault = true)] VisualStudioHostServicesProvider? vsHostWorkspaceServicesProvider)
         {
             if (customTarget is null)
@@ -81,6 +84,11 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
                 throw new ArgumentNullException(nameof(logHubLoggerProviderFactory));
             }
 
+            if (projectSnapshotManagerDispatcher is null)
+            {
+                throw new ArgumentNullException(nameof(projectSnapshotManagerDispatcher));
+            }
+
             if (languageServerFeatureOptions is null)
             {
                 throw new ArgumentNullException(nameof(languageServerFeatureOptions));
@@ -94,6 +102,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
             _languageServerFeatureOptions = languageServerFeatureOptions;
             _vsHostWorkspaceServicesProvider = vsHostWorkspaceServicesProvider;
             _shutdownLock = new object();
+            _projectSnapshotManagerDispatcher = projectSnapshotManagerDispatcher;
         }
 
         public string Name => RazorLSPConstants.RazorLanguageServerName;
@@ -115,13 +124,6 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
 
         public bool ShowNotificationOnInitializeFailed => true;
 
-        public event AsyncEventHandler<EventArgs>? StartAsync;
-        public event AsyncEventHandler<EventArgs>? StopAsync
-        {
-            add { }
-            remove { }
-        }
-
         public async Task<Connection?> ActivateAsync(CancellationToken token)
         {
             // Swap to background thread, nothing below needs to be done on the UI thread.
@@ -136,24 +138,15 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
             // Initialize Logging Infrastructure
             _loggerProvider = (LogHubLoggerProvider)await _logHubLoggerProviderFactory.GetOrCreateAsync(LogFileIdentifier, token).ConfigureAwait(false);
 
-            _server = await RazorLanguageServer.CreateAsync(serverStream, serverStream, traceLevel, _languageServerFeatureOptions, ConfigureLanguageServer).ConfigureAwait(false);
-
-            // Fire and forget for Initialized. Need to allow the LSP infrastructure to run in order to actually Initialize.
-            _ = _server.InitializedAsync(token);
+            _server = await RazorLanguageServer.CreateAsync(serverStream, serverStream, traceLevel, _projectSnapshotManagerDispatcher, ConfigureLanguageServer, _languageServerFeatureOptions).ConfigureAwait(false);
 
             var connection = new Connection(clientStream, clientStream);
             return connection;
         }
 
-        private void ConfigureLanguageServer(RazorLanguageServerBuilder builder)
+        private void ConfigureLanguageServer(IServiceCollection serviceCollection)
         {
-            if (builder is null)
-            {
-                throw new ArgumentNullException(nameof(builder));
-            }
-
-            var services = builder.Services;
-            services.AddLogging(logging =>
+            serviceCollection.AddLogging(logging =>
             {
                 logging.AddFilter<LogHubLoggerProvider>(level => true);
                 logging.AddProvider(_loggerProvider);
@@ -162,7 +155,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
             if (_vsHostWorkspaceServicesProvider != null)
             {
                 var wrapper = new HostServicesProviderWrapper(_vsHostWorkspaceServicesProvider);
-                services.AddSingleton<HostServicesProvider>(wrapper);
+                serviceCollection.AddSingleton<HostServicesProvider>(wrapper);
             }
         }
 
@@ -191,41 +184,12 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
                 await Task.Delay(100, token).ConfigureAwait(false);
             }
 
-            lock (_shutdownLock)
+            if (_server is not null)
             {
-                if (_server is not null)
-                {
-                    // Server still hasn't shutdown, attempt an ungraceful shutdown.
-                    _server.Dispose();
+                // Server still hasn't shutdown, attempt an ungraceful shutdown.
+                await _server.DisposeAsync();
 
-                    ServerShutdown();
-                }
-            }
-        }
-
-        public async Task OnLoadedAsync()
-        {
-            await StartAsync.InvokeAsync(this, EventArgs.Empty).ConfigureAwait(false);
-        }
-
-        public Task OnServerInitializedAsync()
-        {
-            _serverShutdownDisposable = _server!.OnShutdown.Subscribe((_) => ServerShutdown());
-
-            ServerStarted();
-
-            return Task.CompletedTask;
-        }
-
-        private void ServerStarted()
-        {
-            _projectConfigurationFilePathStore.Changed += ProjectConfigurationFilePathStore_Changed;
-
-            var mappings = _projectConfigurationFilePathStore.GetMappings();
-            foreach (var mapping in mappings)
-            {
-                var args = new ProjectConfigurationFilePathChangedEventArgs(mapping.Key, mapping.Value);
-                ProjectConfigurationFilePathStore_Changed(this, args);
+                ServerShutdown();
             }
         }
 
@@ -255,17 +219,17 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
         {
             try
             {
-                    var parameter = new MonitorProjectConfigurationFilePathParams()
-                    {
-                        ProjectFilePath = args.ProjectFilePath,
-                        ConfigurationFilePath = args.ConfigurationFilePath,
-                    };
+                var parameter = new MonitorProjectConfigurationFilePathParams()
+                {
+                    ProjectFilePath = args.ProjectFilePath,
+                    ConfigurationFilePath = args.ConfigurationFilePath,
+                };
 
-                    await _requestInvoker.ReinvokeRequestOnServerAsync<MonitorProjectConfigurationFilePathParams, object>(
-                        LanguageServerConstants.RazorMonitorProjectConfigurationFilePathEndpoint,
-                        RazorLSPConstants.RazorLanguageServerName,
-                        parameter,
-                        cancellationToken);
+                await _requestInvoker.ReinvokeRequestOnServerAsync<MonitorProjectConfigurationFilePathParams, object>(
+                    LanguageServerConstants.RazorMonitorProjectConfigurationFilePathEndpoint,
+                    RazorLSPConstants.RazorLanguageServerName,
+                    parameter,
+                    cancellationToken);
             }
             catch (Exception)
             {

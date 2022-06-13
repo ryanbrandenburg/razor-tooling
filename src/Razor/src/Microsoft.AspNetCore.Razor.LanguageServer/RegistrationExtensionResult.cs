@@ -1,13 +1,11 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the MIT license. See License.txt in the project root for license information.
 
-#nullable disable
-
 using System;
 
 namespace Microsoft.AspNetCore.Razor.LanguageServer
 {
-    internal sealed class RegistrationExtensionResult
+    public sealed class RegistrationExtensionResult
     {
         public RegistrationExtensionResult(string serverCapability, object options)
         {

@@ -9,12 +9,12 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using BenchmarkDotNet.Attributes;
-using Microsoft.AspNetCore.Razor.LanguageServer;
 using Microsoft.AspNetCore.Razor.LanguageServer.Extensions;
 using Microsoft.AspNetCore.Razor.LanguageServer.Formatting;
 using Microsoft.CodeAnalysis.Razor.ProjectSystem;
 using Microsoft.CodeAnalysis.Text;
 using Microsoft.VisualStudio.LanguageServer.Protocol;
+using static Microsoft.AspNetCore.Razor.LanguageServer.RazorLanguageServerTarget;
 
 namespace Microsoft.AspNetCore.Razor.Microbenchmarks.LanguageServer
 {
@@ -130,11 +130,11 @@ namespace Microsoft.AspNetCore.Razor.Microbenchmarks.LanguageServer
         }
 
         [GlobalCleanup]
-        public void CleanupServer()
+        public async Task CleanupServerAsync()
         {
             File.Delete(_filePath);
 
-            RazorLanguageServer?.Dispose();
+            await RazorLanguageServer.DisposeAsync();
         }
 
         private async Task EnsureServicesInitializedAsync()
@@ -146,7 +146,7 @@ namespace Microsoft.AspNetCore.Razor.Microbenchmarks.LanguageServer
 
             RazorLanguageServer = await RazorLanguageServerTask;
             var languageServer = RazorLanguageServer.GetInnerLanguageServerForTesting();
-            RazorFormattingService = languageServer.GetService(typeof(RazorFormattingService)) as RazorFormattingService;
+            RazorFormattingService = languageServer.GetRequiredService<RazorFormattingService>();
         }
     }
 }

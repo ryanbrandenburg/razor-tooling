@@ -1,11 +1,11 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the MIT license. See License.txt in the project root for license information.
 
-#nullable disable
-
 using System;
 using System.Collections.Generic;
+using System.Composition;
 using Microsoft.AspNetCore.Razor.LanguageServer.Common;
+using Microsoft.CodeAnalysis.LanguageServer;
 using Microsoft.CodeAnalysis.Razor;
 using Microsoft.CodeAnalysis.Razor.ProjectSystem;
 using Microsoft.Extensions.Options;
@@ -19,14 +19,15 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
         private readonly FilePathNormalizer _filePathNormalizer;
         private readonly IOptionsMonitor<RazorLSPOptions> _optionsMonitor;
         private readonly AdhocWorkspaceFactory _workspaceFactory;
-        private ProjectSnapshotManagerBase _instance;
+        private ProjectSnapshotManagerBase? _instance;
         private bool _disposed;
 
+        [ImportingConstructor]
         public DefaultProjectSnapshotManagerAccessor(
             ProjectSnapshotManagerDispatcher projectSnapshotManagerDispatcher,
-            IEnumerable<ProjectSnapshotChangeTrigger> changeTriggers,
+            [ImportMany] IEnumerable<ProjectSnapshotChangeTrigger> changeTriggers,
             FilePathNormalizer filePathNormalizer,
-            IOptionsMonitor<RazorLSPOptions> optionsMonitor,
+            RazorLSPOptionsMonitor optionsMonitor,
             AdhocWorkspaceFactory workspaceFactory)
         {
             if (projectSnapshotManagerDispatcher is null)

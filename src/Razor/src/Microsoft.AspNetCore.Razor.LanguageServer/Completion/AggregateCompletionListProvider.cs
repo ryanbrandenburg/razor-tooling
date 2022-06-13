@@ -1,7 +1,6 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the MIT license. See License.txt in the project root for license information.
 
-using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
@@ -16,9 +15,14 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Completion
     {
         private readonly IReadOnlyList<CompletionListProvider> _completionListProviders;
 
-        public AggregateCompletionListProvider(IEnumerable<CompletionListProvider> completionListProviders)
+        private readonly ILogger _logger;
+
+        public AggregateCompletionListProvider(
+            IEnumerable<CompletionListProvider> completionListProviders,
+            ILogger logger)
         {
             _completionListProviders = completionListProviders.ToArray();
+            _logger = logger;
 
             var allTriggerCharacters = _completionListProviders.SelectMany(provider => provider.TriggerCharacters);
             var distinctTriggerCharacters = new HashSet<string>(allTriggerCharacters);
@@ -44,7 +48,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Completion
                     // Trigger character doesn't apply
                     continue;
                 }
-                
+
                 var task = completionListProvider.GetCompletionListAsync(absoluteIndex, completionContext, documentContext, clientCapabilities, cancellationToken);
                 completionListTasks.Add(task);
             }

@@ -1,6 +1,7 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the MIT license. See License.txt in the project root for license information.
 
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Moq;
 using Xunit;
@@ -41,7 +42,8 @@ expected: @"
         {
             var optionsMonitor = new Mock<IOptionsMonitor<RazorLSPOptions>>(MockBehavior.Strict);
             optionsMonitor.SetupGet(o => o.CurrentValue).Returns(RazorLSPOptions.Default);
-            var provider = new CloseTextTagOnAutoInsertProvider(optionsMonitor.Object, LoggerFactory);
+            var logger = new Mock<ILogger>(MockBehavior.Strict);
+            var provider = new CloseTextTagOnAutoInsertProvider(optionsMonitor.Object, logger.Object);
 
             return provider;
         }

@@ -10,7 +10,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.AspNetCore.Razor.LanguageServer.CodeActions.Models;
-using Microsoft.AspNetCore.Razor.LanguageServer.Common;
 using Microsoft.AspNetCore.Razor.LanguageServer.Common.Extensions;
 using Microsoft.AspNetCore.Razor.LanguageServer.EndpointContracts;
 using Microsoft.AspNetCore.Razor.LanguageServer.Extensions;
@@ -27,7 +26,6 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.CodeActions
         private readonly RazorDocumentMappingService _documentMappingService;
         private readonly IEnumerable<RazorCodeActionProvider> _razorCodeActionProviders;
         private readonly IEnumerable<CSharpCodeActionProvider> _csharpCodeActionProviders;
-        private readonly DocumentContextFactory _documentContextFactory;
         private readonly LanguageServerFeatureOptions _languageServerFeatureOptions;
         private readonly ClientNotifierServiceBase _languageServer;
 
@@ -35,31 +33,31 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.CodeActions
 
         private readonly ImmutableHashSet<string> _allAvailableCodeActionNames;
 
+        public bool MutatesSolutionState => false;
+
         public CodeActionEndpoint(
             RazorDocumentMappingService documentMappingService,
             IEnumerable<RazorCodeActionProvider> razorCodeActionProviders,
             IEnumerable<CSharpCodeActionProvider> csharpCodeActionProviders,
-            DocumentContextFactory documentContextFactory,
             ClientNotifierServiceBase languageServer,
             LanguageServerFeatureOptions languageServerFeatureOptions)
         {
             _documentMappingService = documentMappingService ?? throw new ArgumentNullException(nameof(documentMappingService));
             _razorCodeActionProviders = razorCodeActionProviders ?? throw new ArgumentNullException(nameof(razorCodeActionProviders));
             _csharpCodeActionProviders = csharpCodeActionProviders ?? throw new ArgumentNullException(nameof(csharpCodeActionProviders));
-            _documentContextFactory = documentContextFactory ?? throw new ArgumentNullException(nameof(documentContextFactory));
             _languageServer = languageServer ?? throw new ArgumentNullException(nameof(languageServer));
             _languageServerFeatureOptions = languageServerFeatureOptions ?? throw new ArgumentNullException(nameof(languageServerFeatureOptions));
 
             _allAvailableCodeActionNames = GetAllAvailableCodeActionNames();
         }
-        public async Task<SumType<Command, CodeAction>[]?> Handle(CodeActionParamsBridge request, CancellationToken cancellationToken)
+        public async Task<SumType<Command, CodeAction>[]?> HandleRequestAsync(CodeActionParamsBridge request, RazorRequestContext requestContext, CancellationToken cancellationToken)
         {
             if (request is null)
             {
                 throw new ArgumentNullException(nameof(request));
             }
 
-            var razorCodeActionContext = await GenerateRazorCodeActionContextAsync(request, cancellationToken).ConfigureAwait(false);
+            var razorCodeActionContext = await GenerateRazorCodeActionContextAsync(request, requestContext.DocumentContext, cancellationToken).ConfigureAwait(false);
             if (razorCodeActionContext is null)
             {
                 return null;
@@ -93,7 +91,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.CodeActions
             return commandsOrCodeActions.ToArray();
         }
 
-        public RegistrationExtensionResult? GetRegistration(VSInternalClientCapabilities clientCapabilities)
+        public RegistrationExtensionResult? GetRegistration(ClientCapabilities clientCapabilities)
         {
             _supportsCodeActionResolve = clientCapabilities.TextDocument?.CodeAction?.ResolveSupport != null;
 
@@ -108,13 +106,12 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.CodeActions
                 },
                 ResolveProvider = true,
             };
-            return new RegistrationExtensionResult(ServerCapability, options);
+            return new RegistrationExtensionResult(ServerCapability, new SumType<bool, CodeActionOptions>(options));
         }
 
         // internal for testing
-        internal async Task<RazorCodeActionContext?> GenerateRazorCodeActionContextAsync(CodeActionParamsBridge request, CancellationToken cancellationToken)
+        internal async Task<RazorCodeActionContext?> GenerateRazorCodeActionContextAsync(CodeActionParamsBridge request, DocumentContext? documentContext, CancellationToken cancellationToken)
         {
-            var documentContext = await _documentContextFactory.TryCreateAsync(request.TextDocument.Uri, cancellationToken).ConfigureAwait(false);
             if(documentContext is null)
             {
                 return null;
@@ -256,8 +253,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.CodeActions
 
             cancellationToken.ThrowIfCancellationRequested();
 
-            var response = await _languageServer.SendRequestAsync(RazorLanguageServerCustomMessageTargets.RazorProvideCodeActionsEndpoint, context.Request);
-            return await response.Returning<RazorVSInternalCodeAction[]>(cancellationToken);
+            return await _languageServer.SendRequestAsync<CodeActionParams, RazorVSInternalCodeAction[]>(LanguageServerConstants.RazorProvideCodeActionsEndpoint, context.Request, cancellationToken);
         }
 
         private async Task<IEnumerable<RazorVSInternalCodeAction>?> GetRazorCodeActionsAsync(RazorCodeActionContext context, CancellationToken cancellationToken)
@@ -320,6 +316,11 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.CodeActions
             availableCodeActionNames.Add(LanguageServerConstants.CodeActions.CodeActionFromVSCode);
 
             return availableCodeActionNames.ToImmutableHashSet();
+        }
+
+        public object? GetTextDocumentIdentifier(CodeActionParamsBridge request)
+        {
+            return request.TextDocument;
         }
     }
 }

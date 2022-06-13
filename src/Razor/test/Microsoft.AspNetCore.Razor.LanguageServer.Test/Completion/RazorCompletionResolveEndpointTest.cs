@@ -4,12 +4,14 @@
 #nullable disable
 
 using System;
+using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Razor.LanguageServer.EndpointContracts;
 using Microsoft.AspNetCore.Razor.Test.Common;
 using Microsoft.VisualStudio.LanguageServer.Protocol;
+using Newtonsoft.Json;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Razor.LanguageServer.Completion
@@ -33,9 +35,10 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Completion
             // Arrange
             var completionItem = new VSInternalCompletionItem() { Label = "Test" };
             var parameters = ConvertToBridgedItem(completionItem);
+            var requestContext = CreateRazorRequestContext(documentContext: null);
 
             // Act
-            var resolvedItem = await Endpoint.Handle(parameters, CancellationToken.None).ConfigureAwait(false);
+            var resolvedItem = await Endpoint.HandleRequestAsync(parameters, requestContext, CancellationToken.None).ConfigureAwait(false);
 
             // Assert
             Assert.Null(resolvedItem.Documentation);
@@ -49,9 +52,10 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Completion
             var completionList = new VSInternalCompletionList() { Items = new[] { completionItem } };
             completionList.SetResultId(1337, completionSetting: null);
             var parameters = ConvertToBridgedItem(completionItem);
+            var requestContext = CreateRazorRequestContext(documentContext: null);
 
             // Act
-            var resolvedItem = await Endpoint.Handle(parameters, CancellationToken.None).ConfigureAwait(false);
+            var resolvedItem = await Endpoint.HandleRequestAsync(parameters, requestContext, CancellationToken.None).ConfigureAwait(false);
 
             // Assert
             Assert.Null(resolvedItem.Documentation);
@@ -66,9 +70,10 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Completion
             var resultId = CompletionListCache.Set(completionList, context: null);
             completionList.SetResultId(resultId, completionSetting: null);
             var parameters = ConvertToBridgedItem(completionItem);
+            var requestContext = CreateRazorRequestContext(documentContext: null);
 
             // Act
-            var resolvedItem = await Endpoint.Handle(parameters, CancellationToken.None).ConfigureAwait(false);
+            var resolvedItem = await Endpoint.HandleRequestAsync(parameters, requestContext, CancellationToken.None).ConfigureAwait(false);
 
             // Assert
             Assert.NotNull(resolvedItem.Documentation);
@@ -84,9 +89,10 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Completion
             var resultId = CompletionListCache.Set(completionList, context: null);
             completionList.SetResultId(resultId, completionSetting: null);
             var parameters = ConvertToBridgedItem(completionItem);
+            var requestContext = CreateRazorRequestContext(documentContext: null);
 
             // Act
-            var resolvedItem = await Endpoint.Handle(parameters, CancellationToken.None).ConfigureAwait(false);
+            var resolvedItem = await Endpoint.HandleRequestAsync(parameters, requestContext, CancellationToken.None).ConfigureAwait(false);
 
             // Assert
             Assert.NotNull(resolvedItem.Documentation);
@@ -111,9 +117,10 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Completion
             var mergedCompletionItem = mergedCompletionList.Items.Single();
             mergedCompletionItem.Data = mergedCompletionList.Data;
             var parameters = ConvertToBridgedItem(mergedCompletionItem);
+            var requestContext = CreateRazorRequestContext(documentContext: null);
 
             // Act
-            var resolvedItem = await Endpoint.Handle(parameters, CancellationToken.None).ConfigureAwait(false);
+            var resolvedItem = await Endpoint.HandleRequestAsync(parameters, requestContext, CancellationToken.None).ConfigureAwait(false);
 
             // Assert
             Assert.NotNull(resolvedItem.Documentation);
@@ -122,8 +129,11 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Completion
 
         private VSCompletionItemBridge ConvertToBridgedItem(CompletionItem completionItem)
         {
-            var serialized = Serializer.SerializeObject(completionItem);
-            var bridgedItem = Serializer.DeserializeObject<VSCompletionItemBridge>(serialized);
+            var textWriter = new StringWriter();
+            Serializer.Serialize(textWriter, completionItem);
+            var stringBuilder = textWriter.GetStringBuilder();
+            var jsonReader = new JsonTextReader(new StringReader(stringBuilder.ToString()));
+            var bridgedItem = Serializer.Deserialize<VSCompletionItemBridge>(jsonReader);
             return bridgedItem;
         }
 
