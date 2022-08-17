@@ -13,7 +13,6 @@ using Microsoft.CodeAnalysis.Text;
 using Microsoft.Extensions.Logging;
 using Microsoft.VisualStudio.LanguageServer.Protocol;
 using Moq;
-using OmniSharp.Extensions.LanguageServer.Protocol.Models;
 using Xunit;
 using RazorDiagnosticFactory = Microsoft.AspNetCore.Razor.Language.RazorDiagnosticFactory;
 

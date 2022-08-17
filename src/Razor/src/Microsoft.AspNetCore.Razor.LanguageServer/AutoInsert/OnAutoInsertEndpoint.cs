@@ -40,9 +40,9 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.AutoInsert
             _onAutoInsertTriggerCharacters = _onAutoInsertProviders.Select(provider => provider.TriggerCharacter).ToImmutableHashSet();
         }
 
-        public bool MutatesSolutionState => throw new NotImplementedException();
+        public bool MutatesSolutionState => false;
 
-        public RegistrationExtensionResult GetRegistration(ClientCapabilities clientCapabilities)
+        public RegistrationExtensionResult GetRegistration(VSInternalClientCapabilities clientCapabilities)
         {
             const string AssociatedServerCapability = "_vs_onAutoInsertProvider";
 
@@ -56,7 +56,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.AutoInsert
 
         public object? GetTextDocumentIdentifier(OnAutoInsertParamsBridge request)
         {
-            throw new NotImplementedException();
+            return request.TextDocument;
         }
 
         public async Task<VSInternalDocumentOnAutoInsertResponseItem?> HandleRequestAsync(OnAutoInsertParamsBridge request, RazorRequestContext requestContext, CancellationToken cancellationToken)

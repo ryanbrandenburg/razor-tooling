@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See License.txt in the project root for license information.
 
 using System.IO;
+using Microsoft.AspNetCore.Razor.LanguageServer.Common.Extensions;
 using Newtonsoft.Json;
 
 namespace Microsoft.AspNetCore.Razor.LanguageServer.Serialization
@@ -19,6 +20,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Serialization
             public DefaultJsonFileDeserializer()
             {
                 _serializer = new JsonSerializer();
+                _serializer.Converters.RegisterRazorConverters();
             }
 
             public override TValue? Deserialize<TValue>(string filePath) where TValue : class

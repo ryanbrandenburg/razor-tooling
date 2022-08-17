@@ -23,11 +23,11 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Completion
 
         public bool MutatesSolutionState => false;
 
-        public RegistrationExtensionResult? GetRegistration(ClientCapabilities clientCapabilities)
+        public RegistrationExtensionResult? GetRegistration(VSInternalClientCapabilities clientCapabilities)
         {
             const string AssociatedServerCapability = "completionProvider";
 
-            _clientCapabilities = clientCapabilities.ToVSInternalClientCapabilities();
+            _clientCapabilities = clientCapabilities;
 
             var registrationOptions = new CompletionOptions()
             {

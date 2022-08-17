@@ -120,7 +120,7 @@ public class Foo { }
 
         private FormattingContentValidationPass GetPass()
         {
-            var mappingService = new DefaultRazorDocumentMappingService(TestLanguageServerFeatureOptions.Instance, new TestDocumentContextFactory(), Logger);
+            var mappingService = new DefaultRazorDocumentMappingService(TestLanguageServerFeatureOptions.Instance, new TestDocumentContextFactory(), LoggerFactory);
 
             var client = Mock.Of<ClientNotifierServiceBase>(MockBehavior.Strict);
             var pass = new FormattingContentValidationPass(mappingService, FilePathNormalizer, client, LoggerFactory)

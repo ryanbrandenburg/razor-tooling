@@ -22,8 +22,6 @@ using Microsoft.CodeAnalysis.Testing;
 using Microsoft.CodeAnalysis.Text;
 using Microsoft.VisualStudio.LanguageServer.Protocol;
 using Moq;
-using OmniSharp.Extensions.JsonRpc;
-using OmniSharp.Extensions.LanguageServer.Protocol.Server;
 using Xunit;
 using DefinitionResult = Microsoft.VisualStudio.LanguageServer.Protocol.SumType<
     Microsoft.VisualStudio.LanguageServer.Protocol.VSInternalLocation,
@@ -326,7 +324,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Definition
             SetupDocument(out var codeDocument, out _, content);
             var expectedRange = selection.AsRange(codeDocument.GetSourceText());
 
-            var mappingService = new DefaultRazorDocumentMappingService(TestLanguageServerFeatureOptions.Instance, new TestDocumentContextFactory(), Logger);
+            var mappingService = new DefaultRazorDocumentMappingService(TestLanguageServerFeatureOptions.Instance, new TestDocumentContextFactory(), LoggerFactory);
 
             // Act II
             var range = await RazorDefinitionEndpoint.TryGetPropertyRangeAsync(codeDocument, "Title", mappingService, Logger, CancellationToken.None).ConfigureAwait(false);
@@ -534,6 +532,8 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Definition
             await csharpServer.OpenDocumentAsync(csharpDocumentUri, csharpSourceText.ToString()).ConfigureAwait(false);
 
             var razorFilePath = "C:/path/to/file.razor";
+            var razorFileUri = new Uri(razorFilePath);
+            var documentContext = CreateDocumentContext(razorFileUri, codeDocument);
             var documentContextFactory = new TestDocumentContextFactory(razorFilePath, codeDocument, version: 1337);
             var languageServerFeatureOptions = Mock.Of<LanguageServerFeatureOptions>(options =>
                 options.SupportsFileManipulation == true &&
@@ -548,19 +548,21 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Definition
             var projectSnapshotManagerDispatcher = new LSPProjectSnapshotManagerDispatcher(LoggerFactory);
             var searchEngine = new DefaultRazorComponentSearchEngine(Dispatcher, projectSnapshotManagerAccessor, LoggerFactory);
 
-            var endpoint = new RazorDefinitionEndpoint(documentContextFactory, searchEngine, documentMappingService, languageServerFeatureOptions, languageServer, TestLoggerFactory.Instance);
+            var endpoint = new RazorDefinitionEndpoint(searchEngine, documentMappingService, languageServerFeatureOptions, languageServer, TestLoggerFactory.Instance);
 
             codeDocument.GetSourceText().GetLineAndOffset(cursorPosition, out var line, out var offset);
             var request = new DefinitionParamsBridge
             {
                 TextDocument = new TextDocumentIdentifier
                 {
-                    Uri = new Uri(razorFilePath)
+                    Uri = razorFileUri,
                 },
                 Position = new Position(line, offset)
             };
 
-            return await endpoint.Handle(request, CancellationToken.None);
+            var razorContext = CreateRazorRequestContext(documentContext);
+
+            return await endpoint.HandleRequestAsync(request, razorContext, CancellationToken.None);
         }
 
         private class DefinitionLanguageServer : ClientNotifierServiceBase
@@ -574,19 +576,22 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Definition
                 _csharpDocumentUri = csharpDocumentUri;
             }
 
-            public override OmniSharp.Extensions.LanguageServer.Protocol.Models.InitializeParams ClientSettings { get; }
-
-            public override Task OnStarted(ILanguageServer server, CancellationToken cancellationToken)
+            public override Task OnStartedAsync(CancellationToken cancellationToken)
             {
                 return Task.CompletedTask;
             }
 
-            public override Task<IResponseRouterReturns> SendRequestAsync(string method)
+            public override Task SendNotificationAsync<TParams>(string method, TParams @params, CancellationToken cancellationToken)
             {
                 throw new NotImplementedException();
             }
 
-            public async override Task<IResponseRouterReturns> SendRequestAsync<T>(string method, T @params)
+            public override Task SendNotificationAsync(string method, CancellationToken cancellationToken)
+            {
+                throw new NotImplementedException();
+            }
+
+            public async override Task<TResponse> SendRequestAsync<TParams, TResponse>(string method, TParams @params, CancellationToken cancellationToken)
             {
                 Assert.Equal(RazorLanguageServerCustomMessageTargets.RazorDefinitionEndpointName, method);
                 var definitionParams = Assert.IsType<DelegatedPositionParams>(@params);
@@ -600,9 +605,9 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Definition
                     Position = definitionParams.ProjectedPosition
                 };
 
-                var result = await _csharpServer.ExecuteRequestAsync<TextDocumentPositionParams, DefinitionResult?>(Methods.TextDocumentDefinitionName, definitionRequest, CancellationToken.None);
+                var result = await _csharpServer.ExecuteRequestAsync<TextDocumentPositionParams, TResponse>(Methods.TextDocumentDefinitionName, definitionRequest, CancellationToken.None);
 
-                return new TestResponseRouterReturn(result);
+                return result;
             }
         }
     }

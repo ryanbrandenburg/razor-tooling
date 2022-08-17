@@ -3,6 +3,7 @@
 
 using System;
 using CommonLanguageServerProtocol.Framework;
+using Microsoft.AspNetCore.Razor.LanguageServer.Extensions;
 using Microsoft.VisualStudio.LanguageServer.Protocol;
 
 namespace Microsoft.AspNetCore.Razor.LanguageServer;
@@ -31,13 +32,14 @@ internal class CapabilitiesManager : IInitializeManager<InitializeParams, Initia
     {
         var initializeParams = GetInitializeParams();
         var clientCapabilities = initializeParams.Capabilities;
+        var vsClientCapabilities = clientCapabilities.ToVSInternalClientCapabilities();
 
         var serverCapabilities = new VSInternalServerCapabilities();
 
         var registrationExtensions = _lspServices.GetRequiredServices<IRegistrationExtension>();
         foreach (var registrationExtension in registrationExtensions)
         {
-            var registrationResult = registrationExtension.GetRegistration(clientCapabilities);
+            var registrationResult = registrationExtension.GetRegistration(vsClientCapabilities);
             if (registrationResult is not null)
             {
                 serverCapabilities.ApplyRegistrationResult(registrationResult);

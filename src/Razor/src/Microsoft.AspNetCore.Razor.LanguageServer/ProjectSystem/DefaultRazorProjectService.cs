@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Composition;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -392,6 +391,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.ProjectSystem
                 }
             }
         }
+
         private void MoveDocument(string documentFilePath, DefaultProjectSnapshot fromProject, DefaultProjectSnapshot toProject)
         {
             Debug.Assert(fromProject.DocumentFilePaths.Contains(documentFilePath, FilePathComparer.Instance));

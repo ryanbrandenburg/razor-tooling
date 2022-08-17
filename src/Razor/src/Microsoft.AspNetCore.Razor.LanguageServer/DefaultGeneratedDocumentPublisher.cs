@@ -7,9 +7,9 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading;
+using Microsoft.AspNetCore.Razor.LanguageServer.Common;
 using Microsoft.CodeAnalysis.Razor;
 using Microsoft.CodeAnalysis.Razor.ProjectSystem;
-using Microsoft.CodeAnalysis.Razor.Workspaces;
 using Microsoft.CodeAnalysis.Text;
 using Microsoft.Extensions.Logging;
 
@@ -107,7 +107,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
                 HostDocumentVersion = hostDocumentVersion,
             };
 
-            _ = _server.SendNotificationAsync(LanguageServerConstants.RazorUpdateCSharpBufferEndpoint, request, CancellationToken.None);
+            _ = _server.SendNotificationAsync(RazorLanguageServerCustomMessageTargets.RazorUpdateCSharpBufferEndpoint, request, CancellationToken.None);
         }
 
         public override void PublishHtml(string filePath, SourceText sourceText, int hostDocumentVersion)
@@ -160,7 +160,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
                 HostDocumentVersion = hostDocumentVersion,
             };
 
-            _ = _server.SendNotificationAsync(LanguageServerConstants.RazorUpdateHtmlBufferEndpoint, request, CancellationToken.None);
+            _ = _server.SendNotificationAsync(RazorLanguageServerCustomMessageTargets.RazorUpdateHtmlBufferEndpoint, request, CancellationToken.None);
         }
 
         private void ProjectSnapshotManager_Changed(object sender, ProjectChangeEventArgs args)

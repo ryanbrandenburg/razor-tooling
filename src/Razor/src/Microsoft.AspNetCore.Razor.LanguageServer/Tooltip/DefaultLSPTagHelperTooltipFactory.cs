@@ -2,7 +2,6 @@
 // Licensed under the MIT license. See License.txt in the project root for license information.
 
 using System;
-using System.Composition;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Text;

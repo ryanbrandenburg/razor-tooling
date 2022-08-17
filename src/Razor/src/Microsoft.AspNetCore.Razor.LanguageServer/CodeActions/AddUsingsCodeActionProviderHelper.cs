@@ -5,7 +5,7 @@ using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Text.RegularExpressions;
 using Microsoft.AspNetCore.Razor.LanguageServer.CodeActions.Models;
-using Microsoft.CodeAnalysis.Razor.Workspaces;
+using Microsoft.AspNetCore.Razor.LanguageServer.Common;
 
 namespace Microsoft.AspNetCore.Razor.LanguageServer.CodeActions
 {

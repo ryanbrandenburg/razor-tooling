@@ -12,8 +12,8 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Completion
 {
     internal static class CompletionListMerger
     {
-        private static readonly string Data1Key = nameof(MergedCompletionListData.Data1).ToLowerInvariant();
-        private static readonly string Data2Key = nameof(MergedCompletionListData.Data2).ToLowerInvariant();
+        private static readonly string Data1Key = nameof(MergedCompletionListData.Data1);
+        private static readonly string Data2Key = nameof(MergedCompletionListData.Data2);
         private static readonly object EmptyData = new object();
 
         public static VSInternalCompletionList? Merge(VSInternalCompletionList? completionListA, VSInternalCompletionList? completionListB)

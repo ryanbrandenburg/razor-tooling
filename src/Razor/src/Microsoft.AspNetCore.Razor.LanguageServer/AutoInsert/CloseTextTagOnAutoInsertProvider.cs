@@ -21,8 +21,8 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.AutoInsert
 
         public CloseTextTagOnAutoInsertProvider(
             IOptionsMonitor<RazorLSPOptions> optionsMonitor,
-            ILogger logger)
-            : base(logger)
+            ILoggerFactory loggerFactory)
+            : base(loggerFactory)
         {
             if (optionsMonitor is null)
             {

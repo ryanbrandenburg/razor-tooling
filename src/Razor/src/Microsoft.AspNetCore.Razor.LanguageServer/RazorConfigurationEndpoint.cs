@@ -32,7 +32,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
 
         public async Task HandleNotificationAsync(DidChangeConfigurationParamsBridge request, RazorRequestContext context, CancellationToken cancellationToken)
         {
-            await context.LspLogger.LogInformationAsync("Settings changed. Updating the server.");
+            context.Logger.LogInformation("Settings changed. Updating the server.");
 
             await _optionsMonitor.UpdateAsync(cancellationToken);
         }

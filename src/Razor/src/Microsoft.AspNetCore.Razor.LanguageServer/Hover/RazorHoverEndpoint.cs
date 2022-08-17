@@ -2,7 +2,6 @@
 // Licensed under the MIT license. See License.txt in the project root for license information.
 
 using System;
-using System.Composition;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Razor.Language;
@@ -11,25 +10,16 @@ using Microsoft.AspNetCore.Razor.LanguageServer.EndpointContracts;
 using Microsoft.AspNetCore.Razor.LanguageServer.Protocol;
 using Microsoft.CodeAnalysis.Razor.Workspaces;
 using Microsoft.Extensions.Logging;
-using Microsoft.AspNetCore.Razor.LanguageServer.Common.Extensions;
-using Microsoft.AspNetCore.Razor.LanguageServer.EndpointContracts;
-using Microsoft.CodeAnalysis.LanguageServer;
-using Microsoft.AspNetCore.Razor.LanguageServer.Common.Extensions;
-using Microsoft.AspNetCore.Razor.LanguageServer.EndpointContracts;
-using Microsoft.AspNetCore.Razor.LanguageServer.Extensions;
-using Microsoft.CodeAnalysis.Text;
-using Microsoft.Extensions.Logging;
 using Microsoft.VisualStudio.LanguageServer.Protocol;
 
 namespace Microsoft.AspNetCore.Razor.LanguageServer.Hover
 {
-    internal class RazorHoverEndpoint : AbstractRazorDelegatingEndpoint<VSHoverParamsBridge, VSInternalHover>, IVSHoverEndpoint
+    internal class RazorHoverEndpoint : AbstractRazorDelegatingEndpoint<VSHoverParamsBridge, VSInternalHover?, DelegatedPositionParams>, IVSHoverEndpoint
     {
         private readonly RazorHoverInfoService _hoverInfoService;
         private readonly RazorDocumentMappingService _documentMappingService;
         private VSInternalClientCapabilities? _clientCapabilities;
 
-        [ImportingConstructor]
         public RazorHoverEndpoint(
             RazorHoverInfoService hoverInfoService,
             LanguageServerFeatureOptions languageServerFeatureOptions,
@@ -42,10 +32,10 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Hover
             _documentMappingService = documentMappingService ?? throw new ArgumentNullException(nameof(documentMappingService));
         }
 
-        public RegistrationExtensionResult? GetRegistration(ClientCapabilities clientCapabilities)
+        public RegistrationExtensionResult? GetRegistration(VSInternalClientCapabilities clientCapabilities)
         {
             const string AssociatedServerCapability = "hoverProvider";
-            _clientCapabilities = clientCapabilities.ToVSInternalClientCapabilities();
+            _clientCapabilities = clientCapabilities;
 
             var registrationOptions = new HoverOptions()
             {
@@ -61,7 +51,6 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Hover
         public override bool MutatesSolutionState => false;
 
         /// <inheritdoc/>
-<<<<<<< HEAD
         protected override IDelegatedParams CreateDelegatedParams(VSHoverParamsBridge request, RazorRequestContext razorRequestContext, Projection projection, CancellationToken cancellationToken)
         {
             razorRequestContext.RequireDocumentContext();
@@ -75,6 +64,8 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Hover
         /// <inheritdoc/>
         protected override async Task<VSInternalHover?> TryHandleAsync(VSHoverParamsBridge request, RazorRequestContext razorRequestContext, Projection projection, CancellationToken cancellationToken)
         {
+            razorRequestContext.RequireDocumentContext();
+            var documentContext = razorRequestContext.DocumentContext;
             // HTML can still sometimes be handled by razor. For example hovering over
             // a component tag like <Counter /> will still be in an html context
             if (projection.LanguageKind == RazorLanguageKind.CSharp)

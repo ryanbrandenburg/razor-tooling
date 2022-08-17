@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Composition;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
@@ -27,11 +26,11 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
         private readonly DocumentContextFactory _documentContextFactory;
         private readonly ILogger _logger;
 
-        [ImportingConstructor]
         public DefaultRazorDocumentMappingService(
             LanguageServerFeatureOptions languageServerFeatureOptions,
             DocumentContextFactory documentContextFactory,
-            ILogger logger)
+            ILoggerFactory loggerFactory)
+            : base()
         {
             if (languageServerFeatureOptions is null)
             {
@@ -43,14 +42,14 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
                 throw new ArgumentNullException(nameof(documentContextFactory));
             }
 
-            if (logger is null)
+            if (loggerFactory is null)
             {
-                throw new ArgumentNullException(nameof(logger));
+                throw new ArgumentNullException(nameof(loggerFactory));
             }
 
             _languageServerFeatureOptions = languageServerFeatureOptions;
             _documentContextFactory = documentContextFactory;
-            _logger = logger;
+            _logger = loggerFactory.CreateLogger<DefaultRazorDocumentMappingService>();
         }
 
 #pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.

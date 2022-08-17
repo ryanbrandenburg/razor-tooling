@@ -7,6 +7,7 @@ using System.Collections.Immutable;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Razor.LanguageServer.Common;
 using Microsoft.AspNetCore.Razor.LanguageServer.EndpointContracts.WrapWithTag;
 using Microsoft.CodeAnalysis.Razor.Workspaces;
 using Microsoft.VisualStudio.LanguageServer.Protocol;

@@ -26,27 +26,26 @@ using SyntaxKind = Microsoft.AspNetCore.Razor.Language.SyntaxKind;
 
 namespace Microsoft.AspNetCore.Razor.LanguageServer.Definition
 {
-    internal class RazorDefinitionEndpoint : AbstractRazorDelegatingEndpoint<DefinitionParamsBridge, DefinitionResult?>, IDefinitionEndpoint
+    internal class RazorDefinitionEndpoint : AbstractRazorDelegatingEndpoint<DefinitionParamsBridge, DefinitionResult?, DelegatedPositionParams>, IDefinitionEndpoint
     {
         private readonly RazorComponentSearchEngine _componentSearchEngine;
         private readonly RazorDocumentMappingService _documentMappingService;
 
-        public bool MutatesSolutionState => false;
-
         public RazorDefinitionEndpoint(
-            DocumentContextFactory documentContextFactory,
             RazorComponentSearchEngine componentSearchEngine,
             RazorDocumentMappingService documentMappingService,
             LanguageServerFeatureOptions languageServerFeatureOptions,
             ClientNotifierServiceBase languageServer,
             ILoggerFactory loggerFactory)
-            : base(documentContextFactory, languageServerFeatureOptions, documentMappingService, languageServer, loggerFactory.CreateLogger<RazorDefinitionEndpoint>())
+            : base(languageServerFeatureOptions, documentMappingService, languageServer, loggerFactory.CreateLogger<RazorDefinitionEndpoint>())
         {
             _componentSearchEngine = componentSearchEngine ?? throw new ArgumentNullException(nameof(componentSearchEngine));
             _documentMappingService = documentMappingService ?? throw new ArgumentNullException(nameof(documentMappingService));
         }
 
         protected override string CustomMessageTarget => RazorLanguageServerCustomMessageTargets.RazorDefinitionEndpointName;
+
+        public override bool MutatesSolutionState => false;
 
         public RegistrationExtensionResult? GetRegistration(VSInternalClientCapabilities clientCapabilities)
         {
@@ -58,31 +57,33 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Definition
 
         protected async override Task<DefinitionResult?> TryHandleAsync(DefinitionParamsBridge request, RazorRequestContext requestContext, Projection projection, CancellationToken cancellationToken)
         {
-            Logger.LogInformation("Starting go-to-def endpoint request.");
+            requestContext.Logger.LogInformation("Starting go-to-def endpoint request.");
+            requestContext.RequireDocumentContext();
+            var documentContext = requestContext.DocumentContext;
 
             if (!FileKinds.IsComponent(documentContext.FileKind))
             {
-                Logger.LogInformation("FileKind '{fileKind}' is not a component type.", documentContext.FileKind);
+                requestContext.Logger.LogInformation("FileKind '{fileKind}' is not a component type.", documentContext.FileKind);
                 return default;
             }
 
-            var (originTagDescriptor, attributeDescriptor) = await GetOriginTagHelperBindingAsync(documentContext, projection.AbsoluteIndex, Logger, cancellationToken).ConfigureAwait(false);
+            var (originTagDescriptor, attributeDescriptor) = await GetOriginTagHelperBindingAsync(documentContext, projection.AbsoluteIndex, requestContext.Logger, cancellationToken).ConfigureAwait(false);
             if (originTagDescriptor is null)
             {
-                Logger.LogInformation("Origin TagHelper descriptor is null.");
+                requestContext.Logger.LogInformation("Origin TagHelper descriptor is null.");
                 return default;
             }
 
             var originComponentDocumentSnapshot = await _componentSearchEngine.TryLocateComponentAsync(originTagDescriptor).ConfigureAwait(false);
             if (originComponentDocumentSnapshot is null)
             {
-                Logger.LogInformation("Origin TagHelper document snapshot is null.");
+                requestContext.Logger.LogInformation("Origin TagHelper document snapshot is null.");
                 return default;
             }
 
-            Logger.LogInformation("Definition found at file path: {filePath}", originComponentDocumentSnapshot.FilePath);
+            requestContext.Logger.LogInformation("Definition found at file path: {filePath}", originComponentDocumentSnapshot.FilePath);
 
-            var range = await GetNavigateRangeAsync(originComponentDocumentSnapshot, attributeDescriptor, cancellationToken);
+            var range = await GetNavigateRangeAsync(originComponentDocumentSnapshot, attributeDescriptor, requestContext.Logger, cancellationToken);
 
             var originComponentUri = new UriBuilder
             {
@@ -101,13 +102,17 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Definition
             };
         }
 
-        protected override IDelegatedParams CreateDelegatedParams(DefinitionParamsBridge request, DocumentContext documentContext, Projection projection, CancellationToken cancellationToken)
-            => new DelegatedPositionParams(
+        protected override IDelegatedParams CreateDelegatedParams(DefinitionParamsBridge request, RazorRequestContext requestContext, Projection projection, CancellationToken cancellationToken)
+        {
+            requestContext.RequireDocumentContext();
+            var documentContext = requestContext.DocumentContext;
+            return new DelegatedPositionParams(
                     documentContext.Identifier,
                     projection.Position,
                     projection.LanguageKind);
+        }
 
-        protected async override Task<DefinitionResult?> HandleDelegatedResponseAsync(DefinitionResult? response, DocumentContext documentContext, CancellationToken cancellationToken)
+        protected async override Task<DefinitionResult?> HandleDelegatedResponseAsync(DefinitionResult? response, RazorRequestContext requestContext, CancellationToken cancellationToken)
         {
             if (response is null)
             {
@@ -139,14 +144,14 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Definition
             return response;
         }
 
-        private async Task<Range> GetNavigateRangeAsync(DocumentSnapshot documentSnapshot, BoundAttributeDescriptor? attributeDescriptor, CancellationToken cancellationToken)
+        private async Task<Range> GetNavigateRangeAsync(DocumentSnapshot documentSnapshot, BoundAttributeDescriptor? attributeDescriptor, ILogger logger, CancellationToken cancellationToken)
         {
             if (attributeDescriptor is not null)
             {
-                Logger.LogInformation("Attempting to get definition from an attribute directly.");
+                logger.LogInformation("Attempting to get definition from an attribute directly.");
 
                 var originCodeDocument = await documentSnapshot.GetGeneratedOutputAsync().ConfigureAwait(false);
-                var range = await TryGetPropertyRangeAsync(originCodeDocument, attributeDescriptor.GetPropertyName(), _documentMappingService, Logger, cancellationToken).ConfigureAwait(false);
+                var range = await TryGetPropertyRangeAsync(originCodeDocument, attributeDescriptor.GetPropertyName(), _documentMappingService, logger, cancellationToken).ConfigureAwait(false);
 
                 if (range is not null)
                 {

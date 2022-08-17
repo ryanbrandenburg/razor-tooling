@@ -14,6 +14,7 @@ using Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp;
 using Microsoft.AspNetCore.Razor.LanguageServer.Common.Extensions;
 using RazorMapToDocumentRangesResponse = Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp.RazorMapToDocumentRangesResponse;
 using Microsoft.AspNetCore.Razor.LanguageServer.Test.Common;
+using Microsoft.AspNetCore.Razor.Test.Common;
 
 namespace Microsoft.VisualStudio.LanguageServerClient.Razor.Test
 {
@@ -26,7 +27,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.Test
         {
             _uriToVersionAndCodeDocumentMap = new();
 
-            _documentMappingService = new DefaultRazorDocumentMappingService(TestLanguageServerFeatureOptions.Instance, new TestDocumentContextFactory(), TestLogger.Instance);
+            _documentMappingService = new DefaultRazorDocumentMappingService(TestLanguageServerFeatureOptions.Instance, new TestDocumentContextFactory(), TestLoggerFactory.Instance);
         }
 
         public int TextEditRemapCount { get; set; } = 0;
@@ -34,7 +35,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.Test
         public TestLSPDocumentMappingProvider(Dictionary<Uri, (int, RazorCodeDocument)> uriToVersionAndCodeDocumentMap)
         {
             _uriToVersionAndCodeDocumentMap = uriToVersionAndCodeDocumentMap;
-            _documentMappingService = new DefaultRazorDocumentMappingService(TestLanguageServerFeatureOptions.Instance, new TestDocumentContextFactory(), TestLogger.Instance);
+            _documentMappingService = new DefaultRazorDocumentMappingService(TestLanguageServerFeatureOptions.Instance, new TestDocumentContextFactory(), TestLoggerFactory.Instance);
         }
 
         public override Task<RazorMapToDocumentRangesResponse?> MapToDocumentRangesAsync(

@@ -2,7 +2,6 @@
 // Licensed under the MIT license. See License.txt in the project root for license information.
 
 using System;
-using System.Composition;
 using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
@@ -16,7 +15,6 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Semantic
     {
         public bool MutatesSolutionState => false;
 
-        [ImportingConstructor]
         public RazorSemanticTokensEndpoint()
         {
         }
@@ -45,7 +43,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Semantic
             return semanticTokens;
         }
 
-        public RegistrationExtensionResult? GetRegistration(ClientCapabilities clientCapabilities)
+        public RegistrationExtensionResult? GetRegistration(VSInternalClientCapabilities clientCapabilities)
         {
             const string ServerCapability = "semanticTokensProvider";
 

@@ -3,9 +3,7 @@
 
 using System;
 using System.Collections.Generic;
-using System.Composition;
 using Microsoft.AspNetCore.Razor.LanguageServer.Common;
-using Microsoft.CodeAnalysis.LanguageServer;
 using Microsoft.CodeAnalysis.Razor;
 using Microsoft.CodeAnalysis.Razor.ProjectSystem;
 using Microsoft.Extensions.Options;
@@ -22,12 +20,11 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
         private ProjectSnapshotManagerBase? _instance;
         private bool _disposed;
 
-        [ImportingConstructor]
         public DefaultProjectSnapshotManagerAccessor(
             ProjectSnapshotManagerDispatcher projectSnapshotManagerDispatcher,
-            [ImportMany] IEnumerable<ProjectSnapshotChangeTrigger> changeTriggers,
+            IEnumerable<ProjectSnapshotChangeTrigger> changeTriggers,
             FilePathNormalizer filePathNormalizer,
-            RazorLSPOptionsMonitor optionsMonitor,
+            IOptionsMonitor<RazorLSPOptions> optionsMonitor,
             AdhocWorkspaceFactory workspaceFactory)
         {
             if (projectSnapshotManagerDispatcher is null)

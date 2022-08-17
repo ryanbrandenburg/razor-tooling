@@ -33,7 +33,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Semantic
             return Task.CompletedTask;
         }
 
-        public RegistrationExtensionResult? GetRegistration(ClientCapabilities clientCapabilities)
+        public RegistrationExtensionResult? GetRegistration(VSInternalClientCapabilities clientCapabilities)
         {
             const string ServerCapability = "workspace.semanticTokens";
 

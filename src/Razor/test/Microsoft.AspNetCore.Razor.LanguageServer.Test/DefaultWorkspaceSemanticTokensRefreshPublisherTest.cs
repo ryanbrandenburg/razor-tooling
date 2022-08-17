@@ -19,7 +19,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
         public void PublishWorkspaceChanged_DoesNotSendWorkspaceRefreshRequest_WhenNotSupported()
         {
             // Arrange
-            var settingManager = GetServerSettingsManager(semanticRefreshEnabled: true);
+            var settingManager = GetServerSettingsManager(semanticRefreshEnabled: false);
             var serverClient = new TestClient();
             var errorReporter = new TestErrorReporter();
             using var defaultWorkspaceChangedPublisher = new DefaultWorkspaceSemanticTokensRefreshPublisher(settingManager, serverClient, errorReporter);

@@ -20,9 +20,9 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
 
         public static RazorFormattingService CreateWithFullSupport(RazorCodeDocument codeDocument)
         {
-            var mappingService = new DefaultRazorDocumentMappingService(TestLanguageServerFeatureOptions.Instance, new TestDocumentContextFactory(), TestLogger.Instance);
+            var mappingService = new DefaultRazorDocumentMappingService(TestLanguageServerFeatureOptions.Instance, new TestDocumentContextFactory(), TestLoggerFactory.Instance);
 
-            var dispatcher = new LSPProjectSnapshotManagerDispatcher();
+            var dispatcher = new LSPProjectSnapshotManagerDispatcher(TestLoggerFactory.Instance);
             var versionCache = new DefaultDocumentVersionCache(dispatcher);
 
             var client = new FormattingLanguageServerClient();

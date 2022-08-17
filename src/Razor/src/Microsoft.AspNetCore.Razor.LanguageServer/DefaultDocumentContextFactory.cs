@@ -23,12 +23,13 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             ProjectSnapshotManagerDispatcher projectSnapshotManagerDispatcher,
             DocumentResolver documentResolver,
             DocumentVersionCache documentVersionCache,
-            ILogger logger)
+            ILoggerFactory loggerFactory)
         {
             _projectSnapshotManagerDispatcher = projectSnapshotManagerDispatcher ?? throw new ArgumentNullException(nameof(projectSnapshotManagerDispatcher));
             _documentResolver = documentResolver ?? throw new ArgumentNullException(nameof(documentResolver));
             _documentVersionCache = documentVersionCache ?? throw new ArgumentNullException(nameof(documentVersionCache));
-            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+            _logger = loggerFactory.CreateLogger<DefaultDocumentContextFactory>()
+                ?? throw new ArgumentNullException(nameof(loggerFactory));
         }
 
         public override async Task<DocumentContext?> TryCreateAsync(Uri documentUri, CancellationToken cancellationToken)

@@ -92,7 +92,7 @@ namespace Microsoft.AspNetCore.Razor.Test.Common
         // the opportunity to re-write our tests correctly.
         internal ProjectSnapshotManagerDispatcher LegacyDispatcher { get; }
 
-        internal readonly ProjectSnapshotManagerDispatcher Dispatcher = new LSPProjectSnapshotManagerDispatcher();
+        internal readonly ProjectSnapshotManagerDispatcher Dispatcher = new LSPProjectSnapshotManagerDispatcher(TestLoggerFactory.Instance);
 
         internal FilePathNormalizer FilePathNormalizer { get; }
 

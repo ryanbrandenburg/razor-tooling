@@ -44,7 +44,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
 
             var result = new JObject[] { JObject.Parse(razorJsonString), JObject.Parse(htmlJsonString), JObject.Parse(vsEditorJsonString) };
             var languageServer = GetLanguageServer(result);
-            var configurationService = new DefaultRazorConfigurationService(languageServer, Logger);
+            var configurationService = new DefaultRazorConfigurationService(languageServer, LoggerFactory);
 
             // Act
             var options = await configurationService.GetLatestOptionsAsync(CancellationToken.None);
@@ -58,7 +58,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
         {
             // Arrange
             var languageServer = GetLanguageServer<JObject[]>(result: null);
-            var configurationService = new DefaultRazorConfigurationService(languageServer, Logger);
+            var configurationService = new DefaultRazorConfigurationService(languageServer, LoggerFactory);
 
             // Act
             var options = await configurationService.GetLatestOptionsAsync(CancellationToken.None);
@@ -72,7 +72,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
         {
             // Arrange
             var languageServer = GetLanguageServer<JObject[]>(result: null, shouldThrow: true);
-            var configurationService = new DefaultRazorConfigurationService(languageServer, Logger);
+            var configurationService = new DefaultRazorConfigurationService(languageServer, LoggerFactory);
 
             // Act
             var options = await configurationService.GetLatestOptionsAsync(CancellationToken.None);
@@ -111,7 +111,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             // Act
             var result = new JObject[] { JObject.Parse(razorJsonString), JObject.Parse(htmlJsonString), JObject.Parse(vsEditorJsonString) };
             var languageServer = GetLanguageServer(result);
-            var configurationService = new DefaultRazorConfigurationService(languageServer, Logger);
+            var configurationService = new DefaultRazorConfigurationService(languageServer, LoggerFactory);
             var options = configurationService.BuildOptions(result);
 
             // Assert
@@ -151,7 +151,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             // Act
             var result = new JObject[] { JObject.Parse(razorJsonString), JObject.Parse(htmlJsonString), JObject.Parse(vsEditorJsonString) };
             var languageServer = GetLanguageServer(result);
-            var configurationService = new DefaultRazorConfigurationService(languageServer, Logger);
+            var configurationService = new DefaultRazorConfigurationService(languageServer, LoggerFactory);
             var options = configurationService.BuildOptions(result);
 
             // Assert
@@ -167,7 +167,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             // Act
             var result = new JObject[] { null, null, null };
             var languageServer = GetLanguageServer(result);
-            var configurationService = new DefaultRazorConfigurationService(languageServer, Logger);
+            var configurationService = new DefaultRazorConfigurationService(languageServer, LoggerFactory);
             var options = configurationService.BuildOptions(result);
 
             // Assert

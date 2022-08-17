@@ -13,8 +13,9 @@ using Microsoft.VisualStudio.LanguageServer.Protocol;
 
 namespace Microsoft.AspNetCore.Razor.LanguageServer
 {
-    internal abstract class AbstractRazorDelegatingEndpoint<TRequest, TResponse> : IRazorRequestHandler<TRequest, TResponse>
+    internal abstract class AbstractRazorDelegatingEndpoint<TRequest, TResponse, TDelegatedParams> : IRazorRequestHandler<TRequest, TResponse>
         where TRequest : TextDocumentPositionParams
+        where TDelegatedParams : IDelegatedParams
     {
         private readonly LanguageServerFeatureOptions _languageServerFeatureOptions;
         private readonly RazorDocumentMappingService _documentMappingService;
@@ -82,13 +83,8 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
                 throw new ArgumentNullException(nameof(request));
             }
 
-            if (!IsSupported())
-            {
-                return default;
-            }
 
-            var projection = await _documentMappingService.TryGetProjectionAsync(documentContext, request.Position, Logger, cancellationToken).ConfigureAwait(false);
-            if (projection is null)
+            if (!IsSupported())
             {
                 return default;
             }
@@ -115,7 +111,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
 
             var delegatedParams = CreateDelegatedParams(request, context, projection, cancellationToken);
 
-            var delegatedRequest = await _languageServer.SendRequestAsync<TDelegatedParams, TResponse>(CustomMessageTarget, delegatedParams, cancellationToken).ConfigureAwait(false);
+            var delegatedRequest = await _languageServer.SendRequestAsync<IDelegatedParams, TResponse>(CustomMessageTarget, delegatedParams, cancellationToken).ConfigureAwait(false);
 
             var remappedResponse = await HandleDelegatedResponseAsync(delegatedRequest, context, cancellationToken).ConfigureAwait(false);
 

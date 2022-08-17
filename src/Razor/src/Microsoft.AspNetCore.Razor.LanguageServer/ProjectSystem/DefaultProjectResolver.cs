@@ -4,10 +4,8 @@
 #nullable disable
 
 using System;
-using System.Composition;
 using System.IO;
 using Microsoft.AspNetCore.Razor.LanguageServer.Common;
-using Microsoft.CodeAnalysis.LanguageServer;
 using Microsoft.CodeAnalysis.Razor;
 using Microsoft.CodeAnalysis.Razor.ProjectSystem;
 
@@ -22,14 +20,19 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.ProjectSystem
         private readonly FilePathNormalizer _filePathNormalizer;
         private readonly ProjectSnapshotManagerAccessor _projectSnapshotManagerAccessor;
 
-        [ImportingConstructor]
         public DefaultProjectResolver(
             ProjectSnapshotManagerDispatcher projectSnapshotManagerDispatcher,
+            FilePathNormalizer filePathNormalizer,
             ProjectSnapshotManagerAccessor projectSnapshotManagerAccessor)
         {
             if (projectSnapshotManagerDispatcher is null)
             {
                 throw new ArgumentNullException(nameof(projectSnapshotManagerDispatcher));
+            }
+
+            if (filePathNormalizer is null)
+            {
+                throw new ArgumentNullException(nameof(filePathNormalizer));
             }
 
             if (projectSnapshotManagerAccessor is null)
@@ -38,7 +41,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.ProjectSystem
             }
 
             _projectSnapshotManagerDispatcher = projectSnapshotManagerDispatcher;
-            _filePathNormalizer = FilePathNormalizer.Instance;
+            _filePathNormalizer = filePathNormalizer;
             _projectSnapshotManagerAccessor = projectSnapshotManagerAccessor;
 
             var miscellaneousProjectPath = Path.Combine(TempDirectory.Instance.DirectoryPath, "__MISC_RAZOR_PROJECT__");

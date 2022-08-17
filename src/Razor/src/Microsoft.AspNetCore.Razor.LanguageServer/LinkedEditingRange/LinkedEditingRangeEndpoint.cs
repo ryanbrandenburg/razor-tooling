@@ -40,7 +40,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.LinkedEditingRange
 
         public bool MutatesSolutionState => false;
 
-        public RegistrationExtensionResult? GetRegistration(ClientCapabilities clientCapabilities)
+        public RegistrationExtensionResult? GetRegistration(VSInternalClientCapabilities clientCapabilities)
         {
             const string ServerCapability = "linkedEditingRangeProvider";
             var option = new SumType<bool, LinkedEditingRangeOptions>(new LinkedEditingRangeOptions { });

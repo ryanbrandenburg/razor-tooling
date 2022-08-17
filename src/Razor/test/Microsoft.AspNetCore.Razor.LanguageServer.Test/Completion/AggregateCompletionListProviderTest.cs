@@ -47,7 +47,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Completion
         public async Task NoCompletionLists_ReturnsNull()
         {
             // Arrange
-            var provider = new AggregateCompletionListProvider(Array.Empty<CompletionListProvider>(), Logger);
+            var provider = new AggregateCompletionListProvider(Array.Empty<CompletionListProvider>());
 
             // Act
             var completionList = await provider.GetCompletionListAsync(absoluteIndex: 0, CompletionContext, DocumentContext, ClientCapabilities, CancellationToken.None);
@@ -60,7 +60,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Completion
         public async Task SingleCompletionList()
         {
             // Arrange
-            var provider = new AggregateCompletionListProvider(new[] { CompletionListProvider1 }, Logger);
+            var provider = new AggregateCompletionListProvider(new[] { CompletionListProvider1 });
 
             // Act
             var completionList = await provider.GetCompletionListAsync(absoluteIndex: 0, CompletionContext, DocumentContext, ClientCapabilities, CancellationToken.None);
@@ -73,7 +73,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Completion
         public async Task MultipleCompletionLists_Merges()
         {
             // Arrange
-            var provider = new AggregateCompletionListProvider(new[] { CompletionListProvider1, CompletionListProvider2 }, Logger);
+            var provider = new AggregateCompletionListProvider(new[] { CompletionListProvider1, CompletionListProvider2 });
 
             // Act
             var completionList = await provider.GetCompletionListAsync(absoluteIndex: 0, CompletionContext, DocumentContext, ClientCapabilities, CancellationToken.None);
@@ -87,7 +87,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Completion
         public async Task MultipleCompletionLists_DifferentCommitCharacters_OnlyCallsApplicable()
         {
             // Arrange
-            var provider = new AggregateCompletionListProvider(new[] { CompletionListProvider1, CompletionListProvider2 }, Logger);
+            var provider = new AggregateCompletionListProvider(new[] { CompletionListProvider1, CompletionListProvider2 });
 
             CompletionContext.TriggerKind = CompletionTriggerKind.TriggerCharacter;
             CompletionContext.TriggerCharacter = CompletionList2OnlyTriggerCharacter;

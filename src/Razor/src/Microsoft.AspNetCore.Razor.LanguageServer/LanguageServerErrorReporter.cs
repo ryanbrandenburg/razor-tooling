@@ -2,40 +2,40 @@
 // Licensed under the MIT license. See License.txt in the project root for license information.
 
 using System;
-using CommonLanguageServerProtocol.Framework;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Razor;
 using Microsoft.CodeAnalysis.Razor.ProjectSystem;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Razor.LanguageServer
 {
     internal class LanguageServerErrorReporter : ErrorReporter
     {
-        private readonly ILspLogger _logger;
+        private readonly ILogger _logger;
 
-        public LanguageServerErrorReporter(ILspLogger logger)
+        public LanguageServerErrorReporter(ILoggerFactory loggerFactory)
         {
-            if (logger is null)
+            if (loggerFactory is null)
             {
-                throw new ArgumentNullException(nameof(logger));
+                throw new ArgumentNullException(nameof(loggerFactory));
             }
 
-            _logger = logger;
+            _logger = loggerFactory.CreateLogger<LanguageServerErrorReporter>();
         }
 
         public override void ReportError(Exception exception)
         {
-            _ = _logger.LogExceptionAsync(exception, "Error thrown from LanguageServer");
+            _logger.LogError(exception, "Error thrown from LanguageServer");
         }
 
         public override void ReportError(Exception exception, ProjectSnapshot? project)
         {
-            _ = _logger.LogExceptionAsync(exception, "Error thrown from project {projectFilePath}", project?.FilePath ?? "null");
+            _logger.LogError(exception, "Error thrown from project {projectFilePath}", project?.FilePath ?? "null");
         }
 
         public override void ReportError(Exception exception, Project workspaceProject)
         {
-            _ = _logger.LogExceptionAsync(exception, "Error thrown from project {workspaceProjectFilePath}", workspaceProject.FilePath ?? "null");
+            _logger.LogError(exception, "Error thrown from project {workspaceProjectFilePath}", workspaceProject.FilePath ?? "null");
         }
     }
 }

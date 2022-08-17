@@ -40,7 +40,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
                 workspaceServices,
                 razorLanguageServices: Enumerable.Empty<ILanguageService>(),
                 fallbackServices);
-            var workspace = new AdhocWorkspace(services, workspaceKind: "Host");
+            var workspace = new AdhocWorkspace(services);
             return workspace;
         }
     }

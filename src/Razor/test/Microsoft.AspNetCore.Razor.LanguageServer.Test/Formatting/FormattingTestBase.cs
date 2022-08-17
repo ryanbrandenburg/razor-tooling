@@ -131,7 +131,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
             var uri = new Uri(path);
             var (codeDocument, documentSnapshot) = CreateCodeDocumentAndSnapshot(razorSourceText, uri.AbsolutePath, fileKind: fileKind);
 
-            var mappingService = new DefaultRazorDocumentMappingService(TestLanguageServerFeatureOptions.Instance, new TestDocumentContextFactory(), TestLogger.Instance);
+            var mappingService = new DefaultRazorDocumentMappingService(TestLanguageServerFeatureOptions.Instance, new TestDocumentContextFactory(), TestLoggerFactory.Instance);
             var languageKind = mappingService.GetLanguageKind(codeDocument, positionAfterTrigger, rightAssociative: false);
 
             var formattingService = TestRazorFormattingService.CreateWithFullSupport(codeDocument);

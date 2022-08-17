@@ -9,13 +9,13 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using BenchmarkDotNet.Attributes;
-using CommonLanguageServerProtocol.Framework;
 using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.AspNetCore.Razor.LanguageServer;
 using Microsoft.AspNetCore.Razor.LanguageServer.Semantic;
 using Microsoft.CodeAnalysis.Razor;
 using Microsoft.CodeAnalysis.Razor.ProjectSystem;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Microsoft.VisualStudio.LanguageServer.Protocol;
 using static Microsoft.AspNetCore.Razor.LanguageServer.RazorLanguageServerTarget;
 using Range = Microsoft.VisualStudio.LanguageServer.Protocol.Range;
@@ -131,8 +131,8 @@ namespace Microsoft.AspNetCore.Razor.Microbenchmarks.LanguageServer
 
         internal class TestRazorSemanticTokensInfoService : DefaultRazorSemanticTokensInfoService
         {
-            public TestRazorSemanticTokensInfoService(ClientNotifierServiceBase languageServer, RazorDocumentMappingService documentMappingService)
-                : base(languageServer, documentMappingService)
+            public TestRazorSemanticTokensInfoService(ClientNotifierServiceBase languageServer, RazorDocumentMappingService documentMappingService, LoggerFactory loggerFactory)
+                : base(languageServer, documentMappingService, loggerFactory)
             {
             }
 

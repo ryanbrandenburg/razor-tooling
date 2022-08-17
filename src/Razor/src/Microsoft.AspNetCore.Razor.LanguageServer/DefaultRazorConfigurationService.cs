@@ -16,20 +16,20 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
         private readonly ClientNotifierServiceBase _server;
         private readonly ILogger _logger;
 
-        public DefaultRazorConfigurationService(ClientNotifierServiceBase languageServer, ILogger logger)
+        public DefaultRazorConfigurationService(ClientNotifierServiceBase languageServer, ILoggerFactory loggerFactory)
         {
             if (languageServer is null)
             {
                 throw new ArgumentNullException(nameof(languageServer));
             }
 
-            if (logger is null)
+            if (loggerFactory is null)
             {
-                throw new ArgumentNullException(nameof(logger));
+                throw new ArgumentNullException(nameof(loggerFactory));
             }
 
             _server = languageServer;
-            _logger = logger;
+            _logger = loggerFactory.CreateLogger<DefaultRazorConfigurationService>();
         }
 
         public async override Task<RazorLSPOptions?> GetLatestOptionsAsync(CancellationToken cancellationToken)
@@ -165,7 +165,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             }
             catch (Exception ex)
             {
-                _logger.LogError("Malformed option: Token {token} cannot be converted to type {typeof(T)}. {ex}", token, typeof(T), ex);
+                _logger.LogError(ex, "Malformed option: Token {token} cannot be converted to type {typeof(T)}.", token, typeof(T));
                 return defaultValue;
             }
         }

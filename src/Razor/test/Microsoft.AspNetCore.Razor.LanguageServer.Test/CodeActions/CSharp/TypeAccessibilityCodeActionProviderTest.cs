@@ -18,7 +18,7 @@ using Microsoft.CodeAnalysis.Razor.Workspaces.Extensions;
 using Microsoft.AspNetCore.Mvc.Razor.Extensions;
 using Microsoft.VisualStudio.LanguageServer.Protocol;
 using Range = Microsoft.VisualStudio.LanguageServer.Protocol.Range;
-using Microsoft.CodeAnalysis.Razor.Workspaces;
+using Microsoft.AspNetCore.Razor.LanguageServer.Common;
 
 namespace Microsoft.AspNetCore.Razor.LanguageServer.CodeActions
 {

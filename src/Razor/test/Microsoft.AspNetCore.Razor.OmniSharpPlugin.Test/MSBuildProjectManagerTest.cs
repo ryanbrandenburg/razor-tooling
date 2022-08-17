@@ -11,6 +11,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Razor.Language;
+using Microsoft.AspNetCore.Razor.LanguageServer.Common;
 using Microsoft.AspNetCore.Razor.OmniSharpPlugin;
 using Microsoft.Build.Construction;
 using Microsoft.Build.Execution;

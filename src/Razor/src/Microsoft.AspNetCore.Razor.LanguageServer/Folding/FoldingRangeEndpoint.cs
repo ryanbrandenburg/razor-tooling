@@ -8,10 +8,10 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Razor.Language;
+using Microsoft.AspNetCore.Razor.LanguageServer.Common;
 using Microsoft.AspNetCore.Razor.LanguageServer.EndpointContracts;
 using Microsoft.AspNetCore.Razor.LanguageServer.Extensions;
 using Microsoft.AspNetCore.Razor.LanguageServer.Protocol;
-using Microsoft.CodeAnalysis.Razor.Workspaces;
 using Microsoft.CodeAnalysis.Razor.Workspaces.Extensions;
 using Microsoft.Extensions.Logging;
 using Microsoft.VisualStudio.LanguageServer.Protocol;
@@ -42,7 +42,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Folding
             _logger = loggerFactory.CreateLogger<FoldingRangeEndpoint>();
         }
 
-        public RegistrationExtensionResult? GetRegistration(ClientCapabilities clientCapabilities)
+        public RegistrationExtensionResult? GetRegistration(VSInternalClientCapabilities clientCapabilities)
         {
             const string AssociatedServerCapability = "foldingRangeProvider";
 
@@ -91,7 +91,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Folding
         private async Task<IEnumerable<FoldingRange>?> HandleCoreAsync(RazorFoldingRangeRequestParam requestParams, DocumentContext documentContext, CancellationToken cancellationToken)
         {
             var foldingResponse = await _languageServer.SendRequestAsync<RazorFoldingRangeRequestParam, RazorFoldingRangeResponse?>(
-                LanguageServerConstants.RazorFoldingRangeEndpoint,
+                RazorLanguageServerCustomMessageTargets.RazorFoldingRangeEndpoint,
                 requestParams,
                 cancellationToken).ConfigureAwait(false);
             var codeDocument = await documentContext.GetCodeDocumentAsync(cancellationToken).ConfigureAwait(false);

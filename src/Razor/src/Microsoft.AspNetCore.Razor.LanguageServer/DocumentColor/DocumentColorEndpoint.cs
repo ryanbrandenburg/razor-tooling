@@ -4,8 +4,8 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Razor.LanguageServer.Common;
 using Microsoft.AspNetCore.Razor.LanguageServer.EndpointContracts;
-using Microsoft.CodeAnalysis.Razor.Workspaces;
 using Microsoft.VisualStudio.LanguageServer.Protocol;
 
 namespace Microsoft.AspNetCore.Razor.LanguageServer.DocumentColor
@@ -26,7 +26,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.DocumentColor
 
         public bool MutatesSolutionState => false;
 
-        public RegistrationExtensionResult? GetRegistration(ClientCapabilities clientCapabilities)
+        public RegistrationExtensionResult? GetRegistration(VSInternalClientCapabilities clientCapabilities)
         {
             const string ServerCapabilities = "colorProvider";
             var options = new SumType<bool, DocumentColorOptions>(new DocumentColorOptions());
@@ -42,7 +42,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.DocumentColor
         public async Task<ColorInformation[]> HandleRequestAsync(DocumentColorParamsBridge request, RazorRequestContext requestContext, CancellationToken cancellationToken)
         {
             var documentColors = await _languageServer.SendRequestAsync<DocumentColorParams, ColorInformation[]>(
-                LanguageServerConstants.RazorProvideHtmlDocumentColorEndpoint,
+                RazorLanguageServerCustomMessageTargets.RazorProvideHtmlDocumentColorEndpoint,
                 request,
                 cancellationToken).ConfigureAwait(false);
 

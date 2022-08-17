@@ -154,7 +154,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Debugging
 
         public object? GetTextDocumentIdentifier(RazorBreakpointSpanParamsBridge request)
         {
-            throw new NotImplementedException();
+            return request.Uri;
         }
     }
 }

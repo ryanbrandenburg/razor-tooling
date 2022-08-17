@@ -22,7 +22,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
     {
         public RazorLanguageEndpointTest()
         {
-            MappingService = new DefaultRazorDocumentMappingService(TestLanguageServerFeatureOptions.Instance, new TestDocumentContextFactory(), Logger);
+            MappingService = new DefaultRazorDocumentMappingService(TestLanguageServerFeatureOptions.Instance, new TestDocumentContextFactory(), LoggerFactory);
 
         }
 

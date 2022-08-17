@@ -44,7 +44,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
 
         public bool MutatesSolutionState => false;
 
-        public RegistrationExtensionResult? GetRegistration(ClientCapabilities clientCapabilities)
+        public RegistrationExtensionResult? GetRegistration(VSInternalClientCapabilities clientCapabilities)
         {
             const string ServerCapability = "documentFormattingProvider";
 

@@ -53,11 +53,11 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Completion
             _completionListCache = completionListCache;
         }
 
-        public RegistrationExtensionResult? GetRegistration(ClientCapabilities clientCapabilities)
+        public RegistrationExtensionResult? GetRegistration(VSInternalClientCapabilities clientCapabilities)
         {
             const string AssociatedServerCapability = "completionProvider";
 
-            _clientCapabilities = clientCapabilities.ToVSInternalClientCapabilities();
+            _clientCapabilities = clientCapabilities;
 
             var registrationOptions = new CompletionOptions()
             {

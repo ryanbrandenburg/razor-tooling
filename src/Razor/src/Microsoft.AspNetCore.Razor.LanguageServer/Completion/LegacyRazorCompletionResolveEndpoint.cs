@@ -68,10 +68,10 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Completion
             _completionListCache = completionListCache;
         }
 
-        public RegistrationExtensionResult? GetRegistration(ClientCapabilities clientCapabilities)
+        public RegistrationExtensionResult? GetRegistration(VSInternalClientCapabilities clientCapabilities)
         {
             _completionCapability = clientCapabilities.TextDocument?.Completion as VSInternalCompletionSetting;
-            _clientCapabilities = clientCapabilities.ToVSInternalClientCapabilities();
+            _clientCapabilities = clientCapabilities;
 
             var completionSupportedKinds = clientCapabilities.TextDocument?.Completion?.CompletionItem?.DocumentationFormat;
             _documentationKind = completionSupportedKinds?.Contains(MarkupKind.Markdown) == true ? MarkupKind.Markdown : MarkupKind.PlainText;

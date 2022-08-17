@@ -3,7 +3,7 @@
 
 using System;
 using System.Linq;
-using Microsoft.CodeAnalysis.Razor.Workspaces;
+using Microsoft.AspNetCore.Razor.LanguageServer.Common;
 using Microsoft.VisualStudio.LanguageServer.Protocol;
 using Newtonsoft.Json.Linq;
 

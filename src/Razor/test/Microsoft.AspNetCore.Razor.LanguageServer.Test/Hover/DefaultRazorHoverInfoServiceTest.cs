@@ -26,7 +26,6 @@ using Microsoft.VisualStudio.LanguageServer.Protocol;
 using Microsoft.VisualStudio.Text.Adornments;
 using Moq;
 using Xunit;
-using static System.Net.Mime.MediaTypeNames;
 using static Microsoft.AspNetCore.Razor.LanguageServer.Extensions.SourceTextExtensions;
 using static Microsoft.AspNetCore.Razor.LanguageServer.Tooltip.DefaultVSLSPTagHelperTooltipFactory;
 using Range = Microsoft.VisualStudio.LanguageServer.Protocol.Range;
@@ -519,7 +518,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Test.Hover
 
             var languageServerMock = new Mock<ClientNotifierServiceBase>(MockBehavior.Strict);
             languageServerMock
-                .Setup(c => c.SendRequestAsync<DelegatedHoverParams, VSInternalHover>(RazorLanguageServerCustomMessageTargets.RazorHoverEndpointName, It.IsAny<DelegatedHoverParams>(), It.IsAny<CancellationToken>()))
+                .Setup(c => c.SendRequestAsync<IDelegatedParams, VSInternalHover>(RazorLanguageServerCustomMessageTargets.RazorHoverEndpointName, It.IsAny<DelegatedPositionParams>(), It.IsAny<CancellationToken>()))
                 .Returns(Task.FromResult(delegatedHover));
 
             var documentMappingServiceMock = new Mock<RazorDocumentMappingService>(MockBehavior.Strict);
@@ -650,7 +649,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Test.Hover
                 options.HtmlVirtualDocumentSuffix == ".g.html"
                 , MockBehavior.Strict);
             var languageServer = new HoverLanguageServer(csharpServer, csharpDocumentUri);
-            var documentMappingService = new DefaultRazorDocumentMappingService(languageServerFeatureOptions, documentContextFactory, Logger);
+            var documentMappingService = new DefaultRazorDocumentMappingService(languageServerFeatureOptions, documentContextFactory, LoggerFactory);
             var projectSnapshotManager = Mock.Of<ProjectSnapshotManagerBase>(p => p.Projects == new[] { Mock.Of<ProjectSnapshot>(MockBehavior.Strict) }, MockBehavior.Strict);
             var hoverInfoService = GetDefaultRazorHoverInfoService();
 

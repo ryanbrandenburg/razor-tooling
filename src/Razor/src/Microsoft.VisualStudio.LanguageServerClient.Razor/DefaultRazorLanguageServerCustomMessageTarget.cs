@@ -42,7 +42,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
         private readonly LSPDocumentSynchronizer _documentSynchronizer;
 
         [ImportingConstructor]
-        internal DefaultRazorLanguageServerCustomMessageTarget(
+        public DefaultRazorLanguageServerCustomMessageTarget(
             LSPDocumentManager documentManager,
             JoinableTaskContext joinableTaskContext,
             LSPRequestInvoker requestInvoker,

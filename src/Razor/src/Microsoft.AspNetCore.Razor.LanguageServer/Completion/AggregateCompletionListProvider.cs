@@ -6,7 +6,6 @@ using System.Collections.Immutable;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Logging;
 using Microsoft.VisualStudio.LanguageServer.Protocol;
 
 namespace Microsoft.AspNetCore.Razor.LanguageServer.Completion
@@ -15,14 +14,9 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Completion
     {
         private readonly IReadOnlyList<CompletionListProvider> _completionListProviders;
 
-        private readonly ILogger _logger;
-
-        public AggregateCompletionListProvider(
-            IEnumerable<CompletionListProvider> completionListProviders,
-            ILogger logger)
+        public AggregateCompletionListProvider(IEnumerable<CompletionListProvider> completionListProviders)
         {
             _completionListProviders = completionListProviders.ToArray();
-            _logger = logger;
 
             var allTriggerCharacters = _completionListProviders.SelectMany(provider => provider.TriggerCharacters);
             var distinctTriggerCharacters = new HashSet<string>(allTriggerCharacters);

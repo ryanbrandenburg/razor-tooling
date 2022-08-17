@@ -5,7 +5,7 @@ using System;
 
 namespace Microsoft.AspNetCore.Razor.LanguageServer
 {
-    public sealed class RegistrationExtensionResult
+    internal sealed class RegistrationExtensionResult
     {
         public RegistrationExtensionResult(string serverCapability, object options)
         {

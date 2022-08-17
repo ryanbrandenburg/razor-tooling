@@ -689,17 +689,18 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Test.Semantic
                 .Returns(Task.FromResult(csharpTokens));
 
             var documentContextFactory = new TestDocumentContextFactory(documentSnapshots);
-            var documentMappingService = new DefaultRazorDocumentMappingService(TestLanguageServerFeatureOptions.Instance, documentContextFactory, Logger);
+            var documentMappingService = new DefaultRazorDocumentMappingService(TestLanguageServerFeatureOptions.Instance, documentContextFactory, LoggerFactory);
             var loggingFactory = TestLoggerFactory.Instance;
 
             var testClient = new TestClient();
-            var errorReporter = new LanguageServerErrorReporter(LspLogger);
+            var errorReporter = new LanguageServerErrorReporter(LoggerFactory);
             var settingsManager = new TestInitializeManager();
             var semanticTokensRefreshPublisher = new DefaultWorkspaceSemanticTokensRefreshPublisher(settingsManager, testClient, errorReporter);
 
             return new DefaultRazorSemanticTokensInfoService(
                 languageServer.Object,
-                documentMappingService);
+                documentMappingService,
+                LoggerFactory);
         }
 
         private static Range GetRange(string text)

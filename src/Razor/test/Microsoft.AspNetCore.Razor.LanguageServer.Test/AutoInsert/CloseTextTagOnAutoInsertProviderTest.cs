@@ -42,8 +42,7 @@ expected: @"
         {
             var optionsMonitor = new Mock<IOptionsMonitor<RazorLSPOptions>>(MockBehavior.Strict);
             optionsMonitor.SetupGet(o => o.CurrentValue).Returns(RazorLSPOptions.Default);
-            var logger = new Mock<ILogger>(MockBehavior.Strict);
-            var provider = new CloseTextTagOnAutoInsertProvider(optionsMonitor.Object, logger.Object);
+            var provider = new CloseTextTagOnAutoInsertProvider(optionsMonitor.Object, LoggerFactory);
 
             return provider;
         }

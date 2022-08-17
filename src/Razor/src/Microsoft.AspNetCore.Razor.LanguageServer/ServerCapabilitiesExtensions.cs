@@ -27,7 +27,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             s_propertyMappings = dictionary;
         }
 
-        public static void ApplyRegistrationResult(this VSInternalServerCapabilities serverCapabilities, RegistrationExtensionResult registrationExtensionResult)
+        internal static void ApplyRegistrationResult(this VSInternalServerCapabilities serverCapabilities, RegistrationExtensionResult registrationExtensionResult)
         {
             var serverCapability = registrationExtensionResult.ServerCapability;
             if (s_propertyMappings.ContainsKey(serverCapability))

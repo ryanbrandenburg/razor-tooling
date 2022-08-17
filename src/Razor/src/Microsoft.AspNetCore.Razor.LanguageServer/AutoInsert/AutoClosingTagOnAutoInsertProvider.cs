@@ -43,8 +43,8 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.AutoInsert
 
         private readonly IOptionsMonitor<RazorLSPOptions> _optionsMonitor;
 
-        public AutoClosingTagOnAutoInsertProvider(IOptionsMonitor<RazorLSPOptions> optionsMonitor, ILogger logger)
-            : base(logger)
+        public AutoClosingTagOnAutoInsertProvider(IOptionsMonitor<RazorLSPOptions> optionsMonitor, ILoggerFactory loggerFactory)
+            : base(loggerFactory)
         {
             if (optionsMonitor is null)
             {

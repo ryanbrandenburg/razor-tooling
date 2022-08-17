@@ -6,13 +6,11 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
-using CommonLanguageServerProtocol.Framework;
 using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.AspNetCore.Razor.LanguageServer.ProjectSystem;
 using Microsoft.AspNetCore.Razor.Test.Common;
 using Microsoft.CodeAnalysis.Razor;
 using Microsoft.CodeAnalysis.Razor.ProjectSystem;
-using Moq;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Razor.LanguageServer.Test
@@ -32,7 +30,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Test
             // Arrange
             var uri = new Uri("C:/path/to/file.cshtml");
 
-            var factory = new DefaultDocumentContextFactory(Dispatcher, new TestDocumentResolver(), DocumentVersionCache, Logger);
+            var factory = new DefaultDocumentContextFactory(Dispatcher, new TestDocumentResolver(), DocumentVersionCache, LoggerFactory);
 
             // Act
             var documentContext = await factory.TryCreateAsync(uri, CancellationToken.None);
@@ -48,7 +46,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Test
             var uri = new Uri("C:/path/to/file.cshtml");
             var documentSnapshot = TestDocumentSnapshot.Create(uri.GetAbsoluteOrUNCPath());
             var documentResolver = new TestDocumentResolver(documentSnapshot);
-            var factory = new DefaultDocumentContextFactory(Dispatcher, documentResolver, DocumentVersionCache, Logger);
+            var factory = new DefaultDocumentContextFactory(Dispatcher, documentResolver, DocumentVersionCache, LoggerFactory);
 
             // Act
             var documentContext = await factory.TryCreateAsync(uri, CancellationToken.None);
@@ -67,7 +65,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Test
             documentSnapshot.With(codeDocument);
             var documentResolver = new TestDocumentResolver(documentSnapshot);
             await Dispatcher.RunOnDispatcherThreadAsync(() => DocumentVersionCache.TrackDocumentVersion(documentSnapshot, version: 1337), CancellationToken.None);
-            var factory = new DefaultDocumentContextFactory(Dispatcher, documentResolver, DocumentVersionCache, Logger);
+            var factory = new DefaultDocumentContextFactory(Dispatcher, documentResolver, DocumentVersionCache, LoggerFactory);
 
             // Act
             var documentContext = await factory.TryCreateAsync(uri, CancellationToken.None);

@@ -7,6 +7,6 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
 {
     internal interface IRegistrationExtension
     {
-        RegistrationExtensionResult? GetRegistration(ClientCapabilities clientCapabilities);
+        RegistrationExtensionResult? GetRegistration(VSInternalClientCapabilities clientCapabilities);
     }
 }

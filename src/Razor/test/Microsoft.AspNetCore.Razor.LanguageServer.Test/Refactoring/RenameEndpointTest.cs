@@ -435,7 +435,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Refactoring.Test
 
             var languageServerMock = new Mock<ClientNotifierServiceBase>(MockBehavior.Strict);
             languageServerMock
-                .Setup(c => c.SendRequestAsync<DelegatedRenameParams, WorkspaceEdit>(RazorLanguageServerCustomMessageTargets.RazorRenameEndpointName, It.IsAny<DelegatedRenameParams>(), It.IsAny<CancellationToken>()))
+                .Setup(c => c.SendRequestAsync<IDelegatedParams, WorkspaceEdit>(RazorLanguageServerCustomMessageTargets.RazorRenameEndpointName, It.IsAny<DelegatedRenameParams>(), It.IsAny<CancellationToken>()))
                 .Returns(Task.FromResult(delegatedEdit));
 
             var documentMappingServiceMock = new Mock<RazorDocumentMappingService>(MockBehavior.Strict);
@@ -527,7 +527,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Refactoring.Test
             var documentMappingService = new DefaultRazorDocumentMappingService(languageServerFeatureOptions, documentContextFactory, LoggerFactory);
             var projectSnapshotManager = Mock.Of<ProjectSnapshotManagerBase>(p => p.Projects == new[] { Mock.Of<ProjectSnapshot>(MockBehavior.Strict) }, MockBehavior.Strict);
             var projectSnapshotManagerAccessor = new TestProjectSnapshotManagerAccessor(projectSnapshotManager);
-            var projectSnapshotManagerDispatcher = new LSPProjectSnapshotManagerDispatcher();
+            var projectSnapshotManagerDispatcher = new LSPProjectSnapshotManagerDispatcher(LoggerFactory);
             var searchEngine = new DefaultRazorComponentSearchEngine(Dispatcher, projectSnapshotManagerAccessor, LoggerFactory);
 
             var endpoint = new RenameEndpoint(projectSnapshotManagerDispatcher, documentContextFactory, searchEngine, projectSnapshotManagerAccessor, languageServerFeatureOptions, documentMappingService, languageServer, TestLoggerFactory.Instance);

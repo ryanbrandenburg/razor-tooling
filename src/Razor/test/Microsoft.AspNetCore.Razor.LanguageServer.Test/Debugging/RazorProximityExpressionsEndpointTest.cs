@@ -17,7 +17,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Test.Debugging
     {
         public RazorProximityExpressionsEndpointTest()
         {
-            MappingService = new DefaultRazorDocumentMappingService(TestLanguageServerFeatureOptions.Instance, new TestDocumentContextFactory(), Logger);
+            MappingService = new DefaultRazorDocumentMappingService(TestLanguageServerFeatureOptions.Instance, new TestDocumentContextFactory(), LoggerFactory);
         }
 
         private RazorDocumentMappingService MappingService { get; }

@@ -7,6 +7,7 @@ using System.ComponentModel.Composition;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Razor.LanguageServer;
+using Microsoft.AspNetCore.Razor.LanguageServer.Common;
 using Microsoft.CodeAnalysis.Host;
 using Microsoft.CodeAnalysis.Razor;
 using Microsoft.CodeAnalysis.Razor.ProjectSystem;

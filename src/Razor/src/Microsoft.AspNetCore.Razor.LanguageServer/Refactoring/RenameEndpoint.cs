@@ -24,7 +24,7 @@ using Microsoft.VisualStudio.LanguageServer.Protocol;
 
 namespace Microsoft.AspNetCore.Razor.LanguageServer.Refactoring
 {
-    internal class RenameEndpoint : AbstractRazorDelegatingEndpoint<RenameParamsBridge, WorkspaceEdit>, IRenameEndpoint
+    internal class RenameEndpoint : AbstractRazorDelegatingEndpoint<RenameParamsBridge, WorkspaceEdit, DelegatedRenameParams>, IRenameEndpoint
     {
         private readonly ProjectSnapshotManagerDispatcher _projectSnapshotManagerDispatcher;
         private readonly DocumentContextFactory _documentContextFactory;
@@ -52,7 +52,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Refactoring
             _documentMappingService = documentMappingService ?? throw new ArgumentNullException(nameof(documentMappingService));
         }
 
-        public RegistrationExtensionResult? GetRegistration(ClientCapabilities clientCapabilities)
+        public RegistrationExtensionResult? GetRegistration(VSInternalClientCapabilities clientCapabilities)
         {
             const string ServerCapability = "renameProvider";
             var options = new RenameOptions
@@ -92,10 +92,10 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Refactoring
             => _languageServerFeatureOptions.SupportsFileManipulation;
 
         /// <inheritdoc/>
-        protected override IDelegatedParams CreateDelegatedParams(RenameParamsBridge request, DocumentContext documentContext, Projection projection, CancellationToken cancellationToken)
+        protected override IDelegatedParams CreateDelegatedParams(RenameParamsBridge request, RazorRequestContext requestContext, Projection projection, CancellationToken cancellationToken)
         {
-            razorRequestContext.RequireDocumentContext();
-            var documentContext = razorRequestContext.DocumentContext;
+            requestContext.RequireDocumentContext();
+            var documentContext = requestContext.DocumentContext;
             return new DelegatedRenameParams(
                     documentContext.Identifier,
                     projection.Position,
@@ -114,7 +114,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Refactoring
             return await _documentMappingService.RemapWorkspaceEditAsync(response, cancellationToken);
         }
 
-        private async Task<WorkspaceEdit?> TryGetRazorComponentRenameEditsAsync(RenameParamsBridge request, DocumentContextFactory documentContextFactory, int absoluteIndex, DocumentSnapshot requestDocumentSnapshot, RazorCodeDocument codeDocument, CancellationToken cancellationToken)
+        private async Task<WorkspaceEdit?> TryGetRazorComponentRenameEditsAsync(RenameParamsBridge request, int absoluteIndex, DocumentContext documentContext, CancellationToken cancellationToken)
         {
             var codeDocument = await documentContext.GetCodeDocumentAsync(cancellationToken);
 
@@ -181,7 +181,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Refactoring
                         }
 
                         // Add to the list and add the path to the set
-                        var documentContext = await documentContextFactory.TryCreateAsync(new Uri(documentPath), cancellationToken);
+                        var documentContext = await _documentContextFactory.TryCreateAsync(new Uri(documentPath), cancellationToken);
                         if (documentContext is null)
                         {
                             throw new NotImplementedException($"{documentPath} in project {project.FilePath} but not retrievable");

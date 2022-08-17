@@ -2,8 +2,8 @@
 // Licensed under the MIT license. See License.txt in the project root for license information.
 
 using System;
-using System.Composition;
 using Microsoft.CodeAnalysis.Razor.Workspaces;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Razor.LanguageServer
 {
@@ -11,11 +11,18 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
     {
         private const string ThreadName = "Razor." + nameof(LSPProjectSnapshotManagerDispatcher);
 
-        [ImportingConstructor]
-        public LSPProjectSnapshotManagerDispatcher() : base(ThreadName)
+        private readonly ILogger<LSPProjectSnapshotManagerDispatcher> _logger;
+
+        public LSPProjectSnapshotManagerDispatcher(ILoggerFactory loggerFactory) : base(ThreadName)
         {
+            if (loggerFactory is null)
+            {
+                throw new ArgumentNullException(nameof(loggerFactory));
+            }
+
+            _logger = loggerFactory.CreateLogger<LSPProjectSnapshotManagerDispatcher>();
         }
 
-        public override void LogException(Exception ex) { }//=> _logger.LogError(ex, ThreadName + " encountered an exception.");
+        public override void LogException(Exception ex) => _logger.LogError(ex, ThreadName + " encountered an exception.");
     }
 }

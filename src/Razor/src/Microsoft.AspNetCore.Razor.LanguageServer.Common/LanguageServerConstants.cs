@@ -5,8 +5,6 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Common
 {
     public static class LanguageServerConstants
     {
-        public const string RazorLanguageContract = "RazorLanguages";
-
         public const int VSCompletionItemKindOffset = 118115;
 
         public const string DefaultProjectConfigurationFile = "project.razor.json";
@@ -35,9 +33,9 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Common
 
         public const string RazorDocumentOnTypeFormattingEndpoint = "textDocument/onTypeFormatting";
 
-        public const string RazorCompletionEndpointName = "razor/completion";
-
         public const string RazorGetFormattingOptionsEndpointName = "razor/formatting/options";
+
+        public const string RazorCompletionEndpointName = "razor/completion";
 
         public const string RazorCompletionResolveEndpointName = "razor/completionItem/resolve";
 

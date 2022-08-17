@@ -10,6 +10,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.AspNetCore.Razor.LanguageServer.CodeActions.Models;
+using Microsoft.AspNetCore.Razor.LanguageServer.Common;
 using Microsoft.AspNetCore.Razor.LanguageServer.Common.Extensions;
 using Microsoft.AspNetCore.Razor.LanguageServer.EndpointContracts;
 using Microsoft.AspNetCore.Razor.LanguageServer.Extensions;
@@ -91,7 +92,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.CodeActions
             return commandsOrCodeActions.ToArray();
         }
 
-        public RegistrationExtensionResult? GetRegistration(ClientCapabilities clientCapabilities)
+        public RegistrationExtensionResult? GetRegistration(VSInternalClientCapabilities clientCapabilities)
         {
             _supportsCodeActionResolve = clientCapabilities.TextDocument?.CodeAction?.ResolveSupport != null;
 
@@ -253,7 +254,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.CodeActions
 
             cancellationToken.ThrowIfCancellationRequested();
 
-            return await _languageServer.SendRequestAsync<CodeActionParams, RazorVSInternalCodeAction[]>(LanguageServerConstants.RazorProvideCodeActionsEndpoint, context.Request, cancellationToken);
+            return await _languageServer.SendRequestAsync<CodeActionParams, RazorVSInternalCodeAction[]>(RazorLanguageServerCustomMessageTargets.RazorProvideCodeActionsEndpoint, context.Request, cancellationToken);
         }
 
         private async Task<IEnumerable<RazorVSInternalCodeAction>?> GetRazorCodeActionsAsync(RazorCodeActionContext context, CancellationToken cancellationToken)
