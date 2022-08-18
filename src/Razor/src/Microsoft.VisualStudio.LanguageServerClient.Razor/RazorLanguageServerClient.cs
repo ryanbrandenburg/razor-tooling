@@ -30,7 +30,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
 {
     [Export(typeof(ILanguageClient))]
     [ContentType(RazorConstants.RazorLSPContentTypeName)]
-    internal class RazorLanguageServerClient : ILanguageClientCustomMessage2, ILanguageClientPriority
+    internal class RazorLanguageServerClient : ILanguageClient, ILanguageClientCustomMessage2, ILanguageClientPriority
     {
         private const string LogFileIdentifier = "Razor.RazorLanguageServerClient";
 
@@ -48,6 +48,9 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
         private readonly ProjectSnapshotManagerDispatcher _projectSnapshotManagerDispatcher;
 
         private const string RazorLSPLogLevel = "RAZOR_TRACE";
+
+        public event AsyncEventHandler<EventArgs>? StartAsync;
+        public event AsyncEventHandler<EventArgs>? StopAsync;
 
         [ImportingConstructor]
         public RazorLanguageServerClient(
@@ -258,6 +261,32 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
                     Name, initializationState.StatusMessage, initializationState.InitializationException?.ToString())
             };
             return Task.FromResult<InitializationFailureContext?>(initializationFailureContext);
+        }
+
+        public async Task OnLoadedAsync()
+        {
+            await StartAsync.InvokeAsync(this, EventArgs.Empty).ConfigureAwait(false);
+        }
+
+        public Task OnServerInitializedAsync()
+        {
+            //_serverShutdownDisposable = _server!.OnShutdown.Subscribe((_) => ServerShutdown());
+
+            ServerStarted();
+
+            return Task.CompletedTask;
+        }
+
+        private void ServerStarted()
+        {
+            _projectConfigurationFilePathStore.Changed += ProjectConfigurationFilePathStore_Changed;
+
+            var mappings = _projectConfigurationFilePathStore.GetMappings();
+            foreach (var mapping in mappings)
+            {
+                var args = new ProjectConfigurationFilePathChangedEventArgs(mapping.Key, mapping.Value);
+                ProjectConfigurationFilePathStore_Changed(this, args);
+            }
         }
 
         private class HostServicesProviderWrapper : HostServicesProvider

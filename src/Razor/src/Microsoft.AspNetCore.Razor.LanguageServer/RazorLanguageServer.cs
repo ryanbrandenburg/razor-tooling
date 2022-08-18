@@ -11,24 +11,21 @@ using Microsoft.AspNetCore.Razor.LanguageServer.CodeActions;
 using Microsoft.AspNetCore.Razor.LanguageServer.Common;
 using Microsoft.AspNetCore.Razor.LanguageServer.Common.Extensions;
 using Microsoft.AspNetCore.Razor.LanguageServer.Completion;
-using Microsoft.AspNetCore.Razor.LanguageServer.Completion.Delegation;
 using Microsoft.AspNetCore.Razor.LanguageServer.Debugging;
 using Microsoft.AspNetCore.Razor.LanguageServer.Definition;
 using Microsoft.AspNetCore.Razor.LanguageServer.Diagnostics;
 using Microsoft.AspNetCore.Razor.LanguageServer.DocumentColor;
 using Microsoft.AspNetCore.Razor.LanguageServer.DocumentPresentation;
 using Microsoft.AspNetCore.Razor.LanguageServer.EndpointContracts;
+using Microsoft.AspNetCore.Razor.LanguageServer.Extensions;
 using Microsoft.AspNetCore.Razor.LanguageServer.Folding;
 using Microsoft.AspNetCore.Razor.LanguageServer.Formatting;
 using Microsoft.AspNetCore.Razor.LanguageServer.Hover;
 using Microsoft.AspNetCore.Razor.LanguageServer.LinkedEditingRange;
-using Microsoft.AspNetCore.Razor.LanguageServer.ProjectSystem;
 using Microsoft.AspNetCore.Razor.LanguageServer.Refactoring;
 using Microsoft.AspNetCore.Razor.LanguageServer.Semantic;
-using Microsoft.AspNetCore.Razor.LanguageServer.Tooltip;
 using Microsoft.AspNetCore.Razor.LanguageServer.WrapWithTag;
 using Microsoft.CodeAnalysis.Razor;
-using Microsoft.CodeAnalysis.Razor.Completion;
 using Microsoft.CodeAnalysis.Razor.ProjectSystem;
 using Microsoft.CodeAnalysis.Razor.Workspaces;
 using Microsoft.Extensions.DependencyInjection;
@@ -69,7 +66,6 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             _configureServer(services);
             var lifeCycleManager = new LifeCycleManager<RazorRequestContext>(this);
             services.AddSingleton<LifeCycleManager<RazorRequestContext>>(lifeCycleManager);
-            //services.AddSingleton<ILanguageServerSettingsManager, DefaultlanguageServerSettingsManager>();
             services.AddSingleton<IInitializeManager<InitializeParams, InitializeResult>, CapabilitiesManager>();
             services.AddSingleton<IRequestContextFactory<RazorRequestContext>, RazorRequestContextFactory>();
 
@@ -91,59 +87,10 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             services.AddSingleton<WorkspaceSemanticTokensRefreshPublisher, DefaultWorkspaceSemanticTokensRefreshPublisher>();
             services.AddSingleton<ProjectSnapshotChangeTrigger, DefaultWorkspaceSemanticTokensRefreshTrigger>();
 
-            services.AddSingleton<DocumentVersionCache, DefaultDocumentVersionCache>();
-            services.AddSingleton<ProjectSnapshotChangeTrigger>((services) => services.GetRequiredService<DocumentVersionCache>());
-
-            services.AddSingleton<RemoteTextLoaderFactory, DefaultRemoteTextLoaderFactory>();
-            services.AddSingleton<ProjectResolver, DefaultProjectResolver>();
-            services.AddSingleton<DocumentResolver, DefaultDocumentResolver>();
-            services.AddSingleton<RazorProjectService, DefaultRazorProjectService>();
-            services.AddSingleton<ProjectSnapshotChangeTrigger, OpenDocumentGenerator>();
-            services.AddSingleton<RazorDocumentMappingService, DefaultRazorDocumentMappingService>();
-            services.AddSingleton<RazorFileChangeDetectorManager>();
-
-            // Options
-            services.AddSingleton<RazorConfigurationService, DefaultRazorConfigurationService>();
-            services.AddSingleton<RazorLSPOptionsMonitor>();
-            services.AddSingleton<IOptionsMonitor<RazorLSPOptions>, RazorLSPOptionsMonitor>();
-
-            // File change listeners
-            services.AddSingleton<IProjectConfigurationFileChangeListener, ProjectConfigurationStateSynchronizer>();
-            services.AddSingleton<IProjectFileChangeListener, ProjectFileSynchronizer>();
-            services.AddSingleton<IRazorFileChangeListener, RazorFileSynchronizer>();
-
-            // File Change detectors
-            services.AddSingleton<IFileChangeDetector, ProjectConfigurationFileChangeDetector>();
-            services.AddSingleton<IFileChangeDetector, ProjectFileChangeDetector>();
-            services.AddSingleton<IFileChangeDetector, RazorFileChangeDetector>();
-
-            // Document processed listeners
-            services.AddSingleton<DocumentProcessedListener, RazorDiagnosticsPublisher>();
-
-            services.AddSingleton<ProjectSnapshotManagerAccessor, DefaultProjectSnapshotManagerAccessor>();
-            services.AddSingleton<TagHelperFactsService, DefaultTagHelperFactsService>();
-            services.AddSingleton<LSPTagHelperTooltipFactory, DefaultLSPTagHelperTooltipFactory>();
-            services.AddSingleton<VSLSPTagHelperTooltipFactory, DefaultVSLSPTagHelperTooltipFactory>();
+            services.AddDocumentManagmentServices();
 
             // Completion
-            services.AddSingleton<CompletionListCache>();
-            services.AddSingleton<AggregateCompletionListProvider>();
-            services.AddSingleton<CompletionListProvider, DelegatedCompletionListProvider>();
-            services.AddSingleton<CompletionListProvider, RazorCompletionListProvider>();
-            services.AddSingleton<DelegatedCompletionResponseRewriter, TextEditResponseRewriter>();
-            services.AddSingleton<DelegatedCompletionResponseRewriter, DesignTimeHelperResponseRewriter>();
-
-            services.AddSingleton<AggregateCompletionItemResolver>();
-            services.AddSingleton<CompletionItemResolver, RazorCompletionItemResolver>();
-            services.AddSingleton<CompletionItemResolver, DelegatedCompletionItemResolver>();
-            services.AddSingleton<TagHelperCompletionService, LanguageServerTagHelperCompletionService>();
-            services.AddSingleton<RazorCompletionFactsService, DefaultRazorCompletionFactsService>();
-            services.AddSingleton<RazorCompletionItemProvider, DirectiveCompletionItemProvider>();
-            services.AddSingleton<RazorCompletionItemProvider, DirectiveAttributeCompletionItemProvider>();
-            services.AddSingleton<RazorCompletionItemProvider, DirectiveAttributeParameterCompletionItemProvider>();
-            services.AddSingleton<RazorCompletionItemProvider, DirectiveAttributeTransitionCompletionItemProvider>();
-            services.AddSingleton<RazorCompletionItemProvider, MarkupTransitionCompletionItemProvider>();
-            services.AddSingleton<RazorCompletionItemProvider, TagHelperCompletionProvider>();
+            services.AddCompletionServices();
 
             // Auto insert
             services.AddSingleton<RazorOnAutoInsertProvider, CloseTextTagOnAutoInsertProvider>();
@@ -152,23 +99,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             // Folding Range Providers
             services.AddSingleton<RazorFoldingRangeProvider, RazorCodeBlockFoldingProvider>();
 
-            // Formatting
-            services.AddSingleton<RazorFormattingService, DefaultRazorFormattingService>();
-
-            // Formatting Passes
-            services.AddSingleton<IFormattingPass, HtmlFormattingPass>();
-            services.AddSingleton<IFormattingPass, CSharpFormattingPass>();
-            services.AddSingleton<IFormattingPass, CSharpOnTypeFormattingPass>();
-            services.AddSingleton<IFormattingPass, FormattingDiagnosticValidationPass>();
-            services.AddSingleton<IFormattingPass, FormattingContentValidationPass>();
-            services.AddSingleton<IFormattingPass, RazorFormattingPass>();
-
-            // Razor Code actions
-            services.AddSingleton<RazorCodeActionProvider, ExtractToCodeBehindCodeActionProvider>();
-            services.AddSingleton<RazorCodeActionResolver, ExtractToCodeBehindCodeActionResolver>();
-            services.AddSingleton<RazorCodeActionProvider, ComponentAccessibilityCodeActionProvider>();
-            services.AddSingleton<RazorCodeActionResolver, CreateComponentCodeActionResolver>();
-            services.AddSingleton<RazorCodeActionResolver, AddUsingsCodeActionResolver>();
+            services.AddFormattingServices();
 
             // CSharp Code actions
             services.AddSingleton<CSharpCodeActionProvider, TypeAccessibilityCodeActionProvider>();
@@ -184,77 +115,10 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             services.AddSingleton<WorkspaceDirectoryPathResolver, DefaultWorkspaceDirectoryPathResolver>();
             services.AddSingleton<RazorComponentSearchEngine, DefaultRazorComponentSearchEngine>();
 
-            services.AddSingleton<ErrorReporter, LanguageServerErrorReporter>();
-
-            services.AddSingleton<DocumentContextFactory, DefaultDocumentContextFactory>();
-            services.AddSingleton<FilePathNormalizer>();
-            services.AddSingleton<ProjectSnapshotManagerDispatcher, LSPProjectSnapshotManagerDispatcher>();
-            services.AddSingleton<GeneratedDocumentPublisher, DefaultGeneratedDocumentPublisher>();
-            services.AddSingleton<AdhocWorkspaceFactory, DefaultAdhocWorkspaceFactory>();
-            services.AddSingleton<ProjectSnapshotChangeTrigger>((services) => services.GetRequiredService<GeneratedDocumentPublisher>());
-
-            services.AddSingleton<WorkspaceSemanticTokensRefreshPublisher, DefaultWorkspaceSemanticTokensRefreshPublisher>();
-            services.AddSingleton<ProjectSnapshotChangeTrigger, DefaultWorkspaceSemanticTokensRefreshTrigger>();
-
-            services.AddSingleton<DocumentVersionCache, DefaultDocumentVersionCache>();
-            services.AddSingleton<ProjectSnapshotChangeTrigger>((services) => services.GetRequiredService<DocumentVersionCache>());
-
-            services.AddSingleton<RemoteTextLoaderFactory, DefaultRemoteTextLoaderFactory>();
-            services.AddSingleton<ProjectResolver, DefaultProjectResolver>();
-            services.AddSingleton<DocumentResolver, DefaultDocumentResolver>();
-            services.AddSingleton<RazorProjectService, DefaultRazorProjectService>();
-            services.AddSingleton<ProjectSnapshotChangeTrigger, OpenDocumentGenerator>();
-            services.AddSingleton<RazorDocumentMappingService, DefaultRazorDocumentMappingService>();
-            services.AddSingleton<RazorFileChangeDetectorManager>();
-
-            services.AddSingleton<ClientNotifierServiceBase, DefaultClientNotifierService>();
-
-            services.AddSingleton<IOnLanguageServerStarted, DefaultClientNotifierService>();
-
             // Options
             services.AddSingleton<RazorConfigurationService, DefaultRazorConfigurationService>();
             services.AddSingleton<RazorLSPOptionsMonitor>();
             services.AddSingleton<IOptionsMonitor<RazorLSPOptions>, RazorLSPOptionsMonitor>();
-
-            // File change listeners
-            services.AddSingleton<IProjectConfigurationFileChangeListener, ProjectConfigurationStateSynchronizer>();
-            services.AddSingleton<IProjectFileChangeListener, ProjectFileSynchronizer>();
-            services.AddSingleton<IRazorFileChangeListener, RazorFileSynchronizer>();
-
-            // File Change detectors
-            services.AddSingleton<IFileChangeDetector, ProjectConfigurationFileChangeDetector>();
-            services.AddSingleton<IFileChangeDetector, ProjectFileChangeDetector>();
-            services.AddSingleton<IFileChangeDetector, RazorFileChangeDetector>();
-
-            // Document processed listeners
-            services.AddSingleton<DocumentProcessedListener, RazorDiagnosticsPublisher>();
-            services.AddSingleton<DocumentProcessedListener, GeneratedDocumentSynchronizer>();
-            services.AddSingleton<DocumentProcessedListener, CodeDocumentReferenceHolder>();
-
-            services.AddSingleton<ProjectSnapshotManagerAccessor, DefaultProjectSnapshotManagerAccessor>();
-            services.AddSingleton<TagHelperFactsService, DefaultTagHelperFactsService>();
-            services.AddSingleton<LSPTagHelperTooltipFactory, DefaultLSPTagHelperTooltipFactory>();
-            services.AddSingleton<VSLSPTagHelperTooltipFactory, DefaultVSLSPTagHelperTooltipFactory>();
-
-            // Completion
-            services.AddSingleton<CompletionListCache>();
-            services.AddSingleton<AggregateCompletionListProvider>();
-            services.AddSingleton<CompletionListProvider, DelegatedCompletionListProvider>();
-            services.AddSingleton<CompletionListProvider, RazorCompletionListProvider>();
-            services.AddSingleton<DelegatedCompletionResponseRewriter, TextEditResponseRewriter>();
-            services.AddSingleton<DelegatedCompletionResponseRewriter, DesignTimeHelperResponseRewriter>();
-
-            services.AddSingleton<AggregateCompletionItemResolver>();
-            services.AddSingleton<CompletionItemResolver, RazorCompletionItemResolver>();
-            services.AddSingleton<CompletionItemResolver, DelegatedCompletionItemResolver>();
-            services.AddSingleton<TagHelperCompletionService, LanguageServerTagHelperCompletionService>();
-            services.AddSingleton<RazorCompletionFactsService, DefaultRazorCompletionFactsService>();
-            services.AddSingleton<RazorCompletionItemProvider, DirectiveCompletionItemProvider>();
-            services.AddSingleton<RazorCompletionItemProvider, DirectiveAttributeCompletionItemProvider>();
-            services.AddSingleton<RazorCompletionItemProvider, DirectiveAttributeParameterCompletionItemProvider>();
-            services.AddSingleton<RazorCompletionItemProvider, DirectiveAttributeTransitionCompletionItemProvider>();
-            services.AddSingleton<RazorCompletionItemProvider, MarkupTransitionCompletionItemProvider>();
-            services.AddSingleton<RazorCompletionItemProvider, TagHelperCompletionProvider>();
 
             // Auto insert
             services.AddSingleton<RazorOnAutoInsertProvider, CloseTextTagOnAutoInsertProvider>();
@@ -263,37 +127,12 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             // Folding Range Providers
             services.AddSingleton<RazorFoldingRangeProvider, RazorCodeBlockFoldingProvider>();
 
-            // Formatting
-            services.AddSingleton<RazorFormattingService, DefaultRazorFormattingService>();
-
-            // Formatting Passes
-            services.AddSingleton<IFormattingPass, HtmlFormattingPass>();
-            services.AddSingleton<IFormattingPass, CSharpFormattingPass>();
-            services.AddSingleton<IFormattingPass, CSharpOnTypeFormattingPass>();
-            services.AddSingleton<IFormattingPass, FormattingDiagnosticValidationPass>();
-            services.AddSingleton<IFormattingPass, FormattingContentValidationPass>();
-            services.AddSingleton<IFormattingPass, RazorFormattingPass>();
-
             // Razor Code actions
             services.AddSingleton<RazorCodeActionProvider, ExtractToCodeBehindCodeActionProvider>();
             services.AddSingleton<RazorCodeActionResolver, ExtractToCodeBehindCodeActionResolver>();
             services.AddSingleton<RazorCodeActionProvider, ComponentAccessibilityCodeActionProvider>();
             services.AddSingleton<RazorCodeActionResolver, CreateComponentCodeActionResolver>();
             services.AddSingleton<RazorCodeActionResolver, AddUsingsCodeActionResolver>();
-
-            // CSharp Code actions
-            services.AddSingleton<CSharpCodeActionProvider, TypeAccessibilityCodeActionProvider>();
-            services.AddSingleton<CSharpCodeActionProvider, DefaultCSharpCodeActionProvider>();
-            services.AddSingleton<CSharpCodeActionResolver, DefaultCSharpCodeActionResolver>();
-            services.AddSingleton<CSharpCodeActionResolver, AddUsingsCSharpCodeActionResolver>();
-            services.AddSingleton<CSharpCodeActionResolver, UnformattedRemappingCSharpCodeActionResolver>();
-
-            // Other
-            services.AddSingleton<RazorSemanticTokensInfoService, DefaultRazorSemanticTokensInfoService>();
-            services.AddSingleton<RazorHoverInfoService, DefaultRazorHoverInfoService>();
-            services.AddSingleton<HtmlFactsService, DefaultHtmlFactsService>();
-            services.AddSingleton<WorkspaceDirectoryPathResolver, DefaultWorkspaceDirectoryPathResolver>();
-            services.AddSingleton<RazorComponentSearchEngine, DefaultRazorComponentSearchEngine>();
 
             // Defaults: For when the caller hasn't provided them through the `configure` action.
             //services.TryAddSingleton<HostServicesProvider, DefaultHostServicesProvider>();
@@ -307,7 +146,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             void AddHandlers(IServiceCollection services, LanguageServerFeatureOptions featureOptions)
             {
                 // Lifetime Endpoints
-                AddHandler<InitializeHandler<InitializeParams, InitializeResult, RazorRequestContext>>(services);
+                AddHandler<RazorInitializeEndpoint>(services);
                 AddHandler<RazorInitializedEndpoint>(services);
                 AddHandler<ExitHandler<RazorRequestContext>>(services);
                 AddHandler<ShutdownHandler<RazorRequestContext>>(services);
@@ -351,23 +190,25 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
                 if (featureOptions.SingleServerCompletionSupport)
                 {
                     AddRegisteringHandler<RazorCompletionEndpoint>(services);
-                    AddRegisteringHandler<RazorCompletionResolveEndpoint>(services);
+                    AddHandler<RazorCompletionResolveEndpoint>(services);
                 }
                 else
                 {
                     AddRegisteringHandler<LegacyRazorCompletionEndpoint>(services);
-                    AddRegisteringHandler<LegacyRazorCompletionResolveEndpoint>(services);
+                    AddHandler<LegacyRazorCompletionResolveEndpoint>(services);
                 }
 
                 void AddRegisteringHandler<T>(IServiceCollection services) where T : class, IMethodHandler, IRegistrationExtension
                 {
-                    services.AddSingleton<IMethodHandler, T>();
-                    services.AddSingleton<IRegistrationExtension, T>();
+                    services.AddSingleton<T>();
+                    services.AddSingleton<IMethodHandler, T>(s => s.GetRequiredService<T>());
+                    // Transient because it should only be used once and I'm hoping it doesn't stick around.
+                    services.AddTransient<IRegistrationExtension, T>(s => s.GetRequiredService<T>());
                 }
 
                 void AddHandler<T>(IServiceCollection services) where T : class, IMethodHandler
                 {
-                    if (typeof(T) is IRegistrationExtension)
+                    if (typeof(IRegistrationExtension).IsAssignableFrom(typeof(T)))
                     {
                         throw new NotImplementedException($"{nameof(T)} is not using {nameof(AddRegisteringHandler)} when it implements {nameof(IRegistrationExtension)}");
                     }
@@ -383,6 +224,8 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
 
             return lspServices.GetRequiredService<T>();
         }
+
+        internal IObservable<bool> Shutdown;
 
         internal sealed class RazorLanguageServer : IAsyncDisposable
         {
@@ -400,6 +243,8 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
                 _innerServer = innerServer;
                 _disposeLock = new object();
             }
+
+            //public IObservable<bool> OnShutdown => _innerServer.Shutdown;
 
             public static async Task<RazorLanguageServer> CreateAsync(
                 Stream input,
@@ -434,7 +279,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
                 messageFormatter.JsonSerializer.AddVSInternalExtensionConverters();
                 messageFormatter.JsonSerializer.Converters.RegisterRazorConverters();
 
-                var jsonRpc = new StreamJsonRpc.JsonRpc(new HeaderDelimitedMessageHandler(output, input, messageFormatter));
+                var jsonRpc = new JsonRpc(new HeaderDelimitedMessageHandler(output, input, messageFormatter));
 
                 return jsonRpc;
             }

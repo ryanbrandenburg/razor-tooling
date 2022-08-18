@@ -36,7 +36,9 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             }
 
             var lspLogger = _lspServices.GetRequiredService<ILspLogger>();
-            var logger = _lspServices.GetRequiredService<ILogger>();
+            var loggerFactory = _lspServices.GetRequiredService<ILoggerFactory>();
+            var logger = loggerFactory.CreateLogger(queueItem.MethodName);
+
             var requestContext = new RazorRequestContext(documentContext, lspLogger, logger, _lspServices);
 
             return requestContext;

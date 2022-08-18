@@ -32,7 +32,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
 #pragma warning restore CS0618 // Type or member is obsolete
             }
 
-            return clientSettings.RootUri.AbsoluteUri;
+            return clientSettings.RootUri.AbsolutePath;
         }
     }
 }

@@ -120,7 +120,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
 
         public object? GetTextDocumentIdentifier(TRequest request)
         {
-            throw new NotImplementedException();
+            return request.TextDocument;
         }
     }
 }
