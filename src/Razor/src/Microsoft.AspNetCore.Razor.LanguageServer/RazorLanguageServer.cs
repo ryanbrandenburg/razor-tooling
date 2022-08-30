@@ -244,8 +244,6 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
                 _disposeLock = new object();
             }
 
-            //public IObservable<bool> OnShutdown => _innerServer.Shutdown;
-
             public static async Task<RazorLanguageServer> CreateAsync(
                 Stream input,
                 Stream output,

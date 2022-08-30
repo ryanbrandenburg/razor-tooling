@@ -270,8 +270,6 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
 
         public Task OnServerInitializedAsync()
         {
-            //_serverShutdownDisposable = _server!.OnShutdown.Subscribe((_) => ServerShutdown());
-
             ServerStarted();
 
             return Task.CompletedTask;
