@@ -8,7 +8,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.EndpointContracts
 {
     [LanguageServerEndpoint(Methods.CodeActionResolveName)]
     internal interface IVSCodeActionResolveEndpoint :
-        IRazorRequestHandler<CodeActionBridge, CodeAction>
+        IRazorDocumentlessRequestHandler<CodeActionBridge, CodeAction>
     {
     }
 }

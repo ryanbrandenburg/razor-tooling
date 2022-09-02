@@ -34,9 +34,8 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
                 return clientSettings.RootPath!;
 #pragma warning restore CS0618 // Type or member is obsolete
             }
-
-            var normalized =  FilePathNormalizer.Instance.Normalize(clientSettings.RootUri);
-            return normalized.AbsoluteUri;
+            var normalized = clientSettings.RootUri.GetAbsoluteOrUNCPath();
+            return normalized;
         }
     }
 }

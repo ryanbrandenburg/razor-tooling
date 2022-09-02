@@ -36,7 +36,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             languageServer.Setup(s => s.GetInitializeParams())
                 .Returns(clientSettings);
             var detector1 = new Mock<IFileChangeDetector>(MockBehavior.Strict);
-            var expectedWorkspaceDirectory = $"file://{initialWorkspaceDirectory}/";
+            var expectedWorkspaceDirectory = $"\\\\{initialWorkspaceDirectory}";
             detector1.Setup(detector => detector.StartAsync(expectedWorkspaceDirectory, It.IsAny<CancellationToken>()))
                 .Returns(Task.CompletedTask)
                 .Verifiable();

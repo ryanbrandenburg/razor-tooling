@@ -175,10 +175,5 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.CodeActions
 
         private static string GetCodeActionId(RazorCodeActionResolutionParams resolutionParams) =>
             $"`{resolutionParams.Language}.{resolutionParams.Action}`";
-
-        public TextDocumentIdentifier GetTextDocumentIdentifier(CodeActionBridge request)
-        {
-            return null;
-        }
     }
 }

@@ -37,7 +37,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
         public void Resolve_RootUriPrefered()
         {
             // Arrange
-            var initialWorkspaceDirectory = "testpath";
+            var initialWorkspaceDirectory = "C:\\testpath";
             var uriBuilder = new UriBuilder
             {
                 Scheme = "file",
@@ -57,7 +57,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             var workspaceDirectoryPath = workspaceDirectoryPathResolver.Resolve();
 
             // Assert
-            var expectedWorkspaceDirectory = $"file://{initialWorkspaceDirectory}/";
+            var expectedWorkspaceDirectory = "C:/testpath";
             Assert.Equal(expectedWorkspaceDirectory, workspaceDirectoryPath);
         }
     }
