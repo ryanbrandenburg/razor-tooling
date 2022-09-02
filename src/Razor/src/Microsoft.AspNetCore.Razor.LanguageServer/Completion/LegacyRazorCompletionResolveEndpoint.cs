@@ -193,10 +193,5 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Completion
 
             return Task.FromResult(completionItem);
         }
-
-        public TextDocumentIdentifier GetTextDocumentIdentifier(VSCompletionItemBridge request)
-        {
-            return null;
-        }
     }
 }

@@ -8,7 +8,8 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.EndpointContracts
 {
     // TODO: Should be an abstract class that says if it's serial
     [LanguageServerEndpoint(Methods.TextDocumentDidCloseName)]
-    internal interface IVSDidCloseTextDocumentEndpoint: IRazorNotificationHandler<DidCloseTextDocumentParamsBridge>
+    internal interface IVSDidCloseTextDocumentEndpoint: IRazorNotificationHandler<DidCloseTextDocumentParamsBridge>,
+        ITextDocumentIdentifierHandler<DidCloseTextDocumentParamsBridge, TextDocumentIdentifier>
     {
     }
 }

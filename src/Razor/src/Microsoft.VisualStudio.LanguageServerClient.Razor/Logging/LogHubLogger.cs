@@ -60,7 +60,13 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.Logging
             }
             catch (Exception ex)
             {
-                _logWriter.TraceError("Error while trying to write log message: [{0}] {1}", _categoryName, ex);
+                try
+                {
+                    _logWriter.TraceError("Error while trying to write log message: [{0}] {1}", _categoryName, ex);
+                }
+                catch (Exception)
+                {
+                }
             }
         }
 

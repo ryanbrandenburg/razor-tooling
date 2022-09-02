@@ -7,7 +7,9 @@ using Microsoft.VisualStudio.LanguageServer.Protocol;
 namespace Microsoft.AspNetCore.Razor.LanguageServer.EndpointContracts
 {
     [LanguageServerEndpoint(Methods.TextDocumentDidChangeName)]
-    internal interface IVSDidChangeTextDocumentEndpoint : IRazorNotificationHandler<DidChangeTextDocumentParamsBridge>, IRegistrationExtension
+    internal interface IVSDidChangeTextDocumentEndpoint : IRazorNotificationHandler<DidChangeTextDocumentParamsBridge>,
+        ITextDocumentIdentifierHandler<DidChangeTextDocumentParamsBridge, TextDocumentIdentifier>,
+        IRegistrationExtension
     {
     }
 }

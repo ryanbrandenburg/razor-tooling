@@ -10,14 +10,9 @@ using Microsoft.VisualStudio.LanguageServer.Protocol;
 namespace Microsoft.AspNetCore.Razor.LanguageServer
 {
     [LanguageServerEndpoint(Methods.InitializeName)]
-    internal class RazorInitializeEndpoint : IRazorRequestHandler<InitializeParams, InitializeResult>
+    internal class RazorInitializeEndpoint : IRazorDocumentlessRequestHandler<InitializeParams, InitializeResult>
     {
         public bool MutatesSolutionState => true;
-
-        public TextDocumentIdentifier GetTextDocumentIdentifier(InitializeParams request)
-        {
-            return null;
-        }
 
         public Task<InitializeResult> HandleRequestAsync(InitializeParams request, RazorRequestContext context, CancellationToken cancellationToken)
         {

@@ -98,7 +98,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             if (_workTimer is null)
             {
                 // Timer will fire after a fixed delay, but only once.
-                _workTimer = new Timer(WorkTimer_Tick, null, _publishDelay, Timeout.InfiniteTimeSpan);
+                _workTimer = new Timer(WorkTimer_Tick, state: null, dueTime: _publishDelay, period: Timeout.InfiniteTimeSpan);
             }
         }
         private void StartDocumentClosedCheckTimer()

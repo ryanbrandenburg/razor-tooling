@@ -7,6 +7,7 @@ using System;
 using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
+using static Microsoft.AspNetCore.Razor.LanguageServer.RazorLanguageServerTarget;
 
 namespace Microsoft.AspNetCore.Razor.LanguageServer
 {
@@ -45,27 +46,12 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
                     }
                 }
             }
-
-            throw new NotImplementedException();
-            //var server = await RazorLanguageServer.CreateAsync(
-            //    Console.OpenStandardInput(),
-            //    Console.OpenStandardOutput(),
-            //    trace,
-            //    razorLspServiceProvider: null,
-            //    asynchronousOperationListenerProvider: null);
-            //await server.InitializedAsync(CancellationToken.None);
-
-            //using var semaphore = new SemaphoreSlim(1);
-            //await semaphore.WaitAsync();
-
-            //server.Exit += On_Exit;
-
-            //await semaphore.WaitAsync();
-
-            //void On_Exit(object sender, object args)
-            //{
-            //    semaphore.Release();
-            //}
+            // TODO: RYAN
+            var server = await RazorLanguageServer.CreateAsync(
+                Console.OpenStandardInput(),
+                Console.OpenStandardOutput(),
+                trace);
+            await server.WaitForExit;
         }
     }
 }

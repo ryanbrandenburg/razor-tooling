@@ -4,7 +4,6 @@
 #nullable disable
 
 using System;
-using System.Threading.Tasks;
 using Microsoft.CommonLanguageServerProtocol.Framework;
 using Microsoft.Extensions.Logging;
 
@@ -14,34 +13,28 @@ namespace Microsoft.AspNetCore.Razor.Test.Common
     {
         public static readonly TestLspLogger Instance = new();
 
-        public Task LogEndContextAsync(string message, params object[] @params)
+        public void LogEndContext(string message, params object[] @params)
         {
-            return Task.CompletedTask;
         }
 
-        public Task LogError(string message, params object[] @params)
+        public void LogError(string message, params object[] @params)
         {
-            return Task.CompletedTask;
         }
 
-        public Task LogException(Exception exception, string message = null, params object[] @params)
+        public void LogException(Exception exception, string message = null, params object[] @params)
         {
-            return Task.CompletedTask;
         }
 
-        public Task LogInformation(string message, params object[] @params)
+        public void LogInformation(string message, params object[] @params)
         {
-            return Task.CompletedTask;
         }
 
-        public Task LogStartContext(string message, params object[] @params)
+        public void LogStartContext(string message, params object[] @params)
         {
-            return Task.CompletedTask;
         }
 
-        public Task LogWarning(string message, params object[] @params)
+        public void LogWarning(string message, params object[] @params)
         {
-            return Task.CompletedTask;
         }
     }
 

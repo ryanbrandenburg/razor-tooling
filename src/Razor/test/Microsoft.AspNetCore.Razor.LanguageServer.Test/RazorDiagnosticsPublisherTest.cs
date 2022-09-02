@@ -65,7 +65,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             Mock.Get(languageServerDocument).Setup(d => d.SendNotificationAsync(
                 "textDocument/publishDiagnostics",
                 It.IsAny<PublishDiagnosticParams>(),
-                It.IsAny<CancellationToken>())).Verifiable();
+                It.IsAny<CancellationToken>())).Returns(Task.CompletedTask).Verifiable();
             using (var publisher = new TestRazorDiagnosticsPublisher(LegacyDispatcher, languageServerDocument, LoggerFactory)
             {
                 BlockBackgroundWorkCompleting = new ManualResetEventSlim(initialState: true),

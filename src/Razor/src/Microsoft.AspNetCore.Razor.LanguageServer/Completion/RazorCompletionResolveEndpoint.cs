@@ -33,11 +33,6 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Completion
             return null;
         }
 
-        public TextDocumentIdentifier GetTextDocumentIdentifier(VSCompletionItemBridge request)
-        {
-            return null;
-        }
-
         public async Task<VSInternalCompletionItem> HandleRequestAsync(VSCompletionItemBridge completionItemBridge, RazorRequestContext requestContext, CancellationToken cancellationToken)
         {
             VSInternalCompletionItem completionItem = completionItemBridge;

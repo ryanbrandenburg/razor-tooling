@@ -42,11 +42,5 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Semantic
                 RefreshSupport = true,
             });
         }
-
-        public TextDocumentIdentifier GetTextDocumentIdentifier(SemanticTokensRefreshParamsBridge request)
-        {
-            return null;
-        }
-
     }
 }

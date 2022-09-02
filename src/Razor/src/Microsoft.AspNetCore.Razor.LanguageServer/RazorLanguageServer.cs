@@ -38,22 +38,24 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
 {
     internal class RazorLanguageServerTarget : AbstractLanguageServer<RazorRequestContext>
     {
-        private readonly StreamJsonRpc.JsonRpc _jsonRpc;
-        private readonly ProjectSnapshotManagerDispatcher _projectSnapshotManagerDispatcher;
-        private readonly LanguageServerFeatureOptions _featureOptions;
-        private readonly Action<IServiceCollection> _configureServer;
+        private readonly JsonRpc _jsonRpc;
+        private readonly LanguageServerFeatureOptions? _featureOptions;
+        private readonly ProjectSnapshotManagerDispatcher? _projectSnapshotManagerDispatcher;
+        private readonly Action<IServiceCollection>? _configureServer;
+
+        private TaskCompletionSource<int> tcs = new();
 
         public RazorLanguageServerTarget(
-            StreamJsonRpc.JsonRpc jsonRpc,
+            JsonRpc jsonRpc,
             ILspLogger logger,
-            ProjectSnapshotManagerDispatcher projectSnapshotManagerDispatcher,
-            LanguageServerFeatureOptions featureOptions,
-            Action<IServiceCollection> configureServer)
+            ProjectSnapshotManagerDispatcher? projectSnapshotManagerDispatcher,
+            LanguageServerFeatureOptions? featureOptions,
+            Action<IServiceCollection>? configureServer)
             : base(jsonRpc, logger)
         {
             _jsonRpc = jsonRpc;
-            _projectSnapshotManagerDispatcher = projectSnapshotManagerDispatcher;
             _featureOptions = featureOptions;
+            _projectSnapshotManagerDispatcher = projectSnapshotManagerDispatcher;
             _configureServer = configureServer;
         }
 
@@ -63,7 +65,11 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
                 .AddOptions()
                 .AddLogging();
 
-            _configureServer(services);
+            if (_configureServer is not null)
+            {
+                _configureServer(services);
+            }
+
             services.AddSingleton<ILifeCycleManager>(this);
             services.AddSingleton<IInitializeManager<InitializeParams, InitializeResult>, CapabilitiesManager>();
             services.AddSingleton<IRequestContextFactory<RazorRequestContext>, RazorRequestContextFactory>();
@@ -72,13 +78,19 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             services.AddSingleton<ClientNotifierServiceBase>(serverManager);
             services.AddSingleton<IOnLanguageServerStarted>(serverManager);
             services.AddSingleton<ILspLogger>(RazorLspLogger.Instance);
-            services.AddSingleton<ProjectSnapshotManagerDispatcher>(_projectSnapshotManagerDispatcher);
-
             services.AddSingleton<ErrorReporter, LanguageServerErrorReporter>();
 
             services.AddSingleton<DocumentContextFactory, DefaultDocumentContextFactory>();
             services.AddSingleton<FilePathNormalizer>();
-            services.AddSingleton<ProjectSnapshotManagerDispatcher, LSPProjectSnapshotManagerDispatcher>();
+            if (_projectSnapshotManagerDispatcher is null)
+            {
+                services.AddSingleton<ProjectSnapshotManagerDispatcher, LSPProjectSnapshotManagerDispatcher>();
+            }
+            else
+            {
+                services.AddSingleton<ProjectSnapshotManagerDispatcher>(_projectSnapshotManagerDispatcher);
+            }
+
             services.AddSingleton<GeneratedDocumentPublisher, DefaultGeneratedDocumentPublisher>();
             services.AddSingleton<AdhocWorkspaceFactory, DefaultAdhocWorkspaceFactory>();
             services.AddSingleton<ProjectSnapshotChangeTrigger>((services) => services.GetRequiredService<GeneratedDocumentPublisher>());
@@ -142,7 +154,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
 
             return lspServices;
 
-            static void AddHandlers(IServiceCollection services, LanguageServerFeatureOptions featureOptions)
+            static void AddHandlers(IServiceCollection services, LanguageServerFeatureOptions? featureOptions)
             {
                 // Lifetime Endpoints
                 AddHandler<RazorInitializeEndpoint>(services);
@@ -184,12 +196,13 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
                 AddRegisteringHandler<TextDocumentTextPresentationEndpoint>(services);
                 AddRegisteringHandler<TextDocumentUriPresentationEndpoint>(services);
 
+                featureOptions ??= new DefaultLanguageServerFeatureOptions();
                 services.AddSingleton(featureOptions);
 
                 if (featureOptions.SingleServerCompletionSupport)
                 {
                     AddRegisteringHandler<RazorCompletionEndpoint>(services);
-                    AddHandler<RazorCompletionResolveEndpoint>(services);
+                    AddRegisteringHandler<RazorCompletionResolveEndpoint>(services);
                 }
                 else
                 {
@@ -224,6 +237,16 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             return lspServices.GetRequiredService<T>();
         }
 
+        public override Task ExitAsync()
+        {
+            var exit = base.ExitAsync();
+
+            tcs.TrySetResult(0);
+            return exit;
+        }
+
+        internal Task WaitForExit => tcs.Task;
+
         internal sealed class RazorLanguageServer : IAsyncDisposable
         {
             private readonly RazorLanguageServerTarget _innerServer;
@@ -245,9 +268,9 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
                 Stream input,
                 Stream output,
                 Trace trace,
-                ProjectSnapshotManagerDispatcher projectSnapshotManagerDispatcher,
-                Action<IServiceCollection> configure,
-                LanguageServerFeatureOptions featureOptions)
+                ProjectSnapshotManagerDispatcher? projectSnapshotManagerDispatcher = null,
+                Action<IServiceCollection>? configure = null,
+                LanguageServerFeatureOptions? featureOptions = null)
             {
 
                 var logLevel = RazorLSPOptions.GetLogLevelForTrace(trace);
@@ -303,6 +326,8 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             {
                 return _innerServer;
             }
+
+            internal Task WaitForExit => _innerServer.WaitForExit;
         }
     }
 }

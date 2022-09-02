@@ -2,6 +2,9 @@
 // Licensed under the MIT license. See License.txt in the project root for license information.
 
 using System;
+using System.Text.RegularExpressions;
+using Microsoft.AspNetCore.Razor.LanguageServer.Common;
+using Microsoft.CodeAnalysis.Razor;
 using Microsoft.CommonLanguageServerProtocol.Framework;
 using Microsoft.VisualStudio.LanguageServer.Protocol;
 
@@ -32,7 +35,8 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
 #pragma warning restore CS0618 // Type or member is obsolete
             }
 
-            return clientSettings.RootUri.AbsolutePath;
+            var normalized =  FilePathNormalizer.Instance.Normalize(clientSettings.RootUri);
+            return normalized.AbsoluteUri;
         }
     }
 }
