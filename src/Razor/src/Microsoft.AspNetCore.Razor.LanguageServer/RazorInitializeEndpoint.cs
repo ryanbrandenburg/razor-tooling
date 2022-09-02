@@ -3,7 +3,7 @@
 
 using System.Threading;
 using System.Threading.Tasks;
-using CommonLanguageServerProtocol.Framework;
+using Microsoft.CommonLanguageServerProtocol.Framework;
 using Microsoft.AspNetCore.Razor.LanguageServer.EndpointContracts;
 using Microsoft.VisualStudio.LanguageServer.Protocol;
 
@@ -14,7 +14,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
     {
         public bool MutatesSolutionState => true;
 
-        public object? GetTextDocumentIdentifier(InitializeParams request)
+        public TextDocumentIdentifier GetTextDocumentIdentifier(InitializeParams request)
         {
             return null;
         }

@@ -49,7 +49,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             return result;
         }
 
-        public object? GetTextDocumentIdentifier(DidChangeTextDocumentParamsBridge request)
+        public TextDocumentIdentifier GetTextDocumentIdentifier(DidChangeTextDocumentParamsBridge request)
         {
             return request.TextDocument;
         }

@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Razor.LanguageServer.EndpointContracts;
 using Microsoft.AspNetCore.Razor.LanguageServer.ProjectSystem;
 using Microsoft.CodeAnalysis.Razor;
+using Microsoft.VisualStudio.LanguageServer.Protocol;
 
 namespace Microsoft.AspNetCore.Razor.LanguageServer
 {
@@ -35,7 +36,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             _projectService = projectService;
         }
 
-        public object? GetTextDocumentIdentifier(DidCloseTextDocumentParamsBridge request)
+        public TextDocumentIdentifier GetTextDocumentIdentifier(DidCloseTextDocumentParamsBridge request)
         {
             return request.TextDocument;
         }

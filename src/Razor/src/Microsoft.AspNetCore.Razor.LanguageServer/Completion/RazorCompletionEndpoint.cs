@@ -39,7 +39,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Completion
             return new RegistrationExtensionResult(AssociatedServerCapability, registrationOptions);
         }
 
-        public object? GetTextDocumentIdentifier(VSCompletionParamsBridge request)
+        public TextDocumentIdentifier GetTextDocumentIdentifier(VSCompletionParamsBridge request)
         {
             return request.TextDocument;
         }

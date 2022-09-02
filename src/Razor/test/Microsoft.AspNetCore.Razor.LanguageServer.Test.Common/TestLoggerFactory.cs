@@ -5,7 +5,7 @@
 
 using System;
 using System.Threading.Tasks;
-using CommonLanguageServerProtocol.Framework;
+using Microsoft.CommonLanguageServerProtocol.Framework;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Razor.Test.Common
@@ -19,27 +19,27 @@ namespace Microsoft.AspNetCore.Razor.Test.Common
             return Task.CompletedTask;
         }
 
-        public Task LogErrorAsync(string message, params object[] @params)
+        public Task LogError(string message, params object[] @params)
         {
             return Task.CompletedTask;
         }
 
-        public Task LogExceptionAsync(Exception exception, string message = null, params object[] @params)
+        public Task LogException(Exception exception, string message = null, params object[] @params)
         {
             return Task.CompletedTask;
         }
 
-        public Task LogInformationAsync(string message, params object[] @params)
+        public Task LogInformation(string message, params object[] @params)
         {
             return Task.CompletedTask;
         }
 
-        public Task LogStartContextAsync(string message, params object[] @params)
+        public Task LogStartContext(string message, params object[] @params)
         {
             return Task.CompletedTask;
         }
 
-        public Task LogWarningAsync(string message, params object[] @params)
+        public Task LogWarning(string message, params object[] @params)
         {
             return Task.CompletedTask;
         }

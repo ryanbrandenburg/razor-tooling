@@ -304,7 +304,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Completion
             return false;
         }
 
-        public object? GetTextDocumentIdentifier(VSCompletionParamsBridge request)
+        public TextDocumentIdentifier GetTextDocumentIdentifier(VSCompletionParamsBridge request)
         {
             return request.TextDocument;
         }

@@ -24,7 +24,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             _projectService = razorProjectService;
         }
 
-        public object? GetTextDocumentIdentifier(DidOpenTextDocumentParamsBridge request)
+        public TextDocumentIdentifier GetTextDocumentIdentifier(DidOpenTextDocumentParamsBridge request)
         {
             var identifier = new TextDocumentIdentifier
             {

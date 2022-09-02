@@ -14,6 +14,7 @@ using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.ExternalAccess.Razor;
 using Microsoft.CodeAnalysis.Text;
 using Microsoft.Extensions.Logging;
+using Microsoft.VisualStudio.LanguageServer.Protocol;
 
 namespace Microsoft.AspNetCore.Razor.LanguageServer.Debugging
 {
@@ -42,9 +43,12 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Debugging
 
         public bool MutatesSolutionState => false;
 
-        public object? GetTextDocumentIdentifier(RazorProximityExpressionsParamsBridge request)
+        public TextDocumentIdentifier GetTextDocumentIdentifier(RazorProximityExpressionsParamsBridge request)
         {
-            return request.Uri;
+            return new TextDocumentIdentifier
+            {
+                Uri = request.Uri
+            };
         }
 
         public async Task<RazorProximityExpressionsResponse?> HandleRequestAsync(RazorProximityExpressionsParamsBridge request, RazorRequestContext requestContext, CancellationToken cancellationToken)
@@ -90,7 +94,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Debugging
                 return null;
             }
 
-            _logger.LogTrace("Proximity expressions request for ({Line}, {Character}) yielded {expressionsCount} results.", 
+            _logger.LogTrace("Proximity expressions request for ({Line}, {Character}) yielded {expressionsCount} results.",
                 request.Position.Line, request.Position.Character, expressions.Count);
 
             return new RazorProximityExpressionsResponse

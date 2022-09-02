@@ -271,7 +271,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.DocumentPresentation
             return workspaceEdit;
         }
 
-        public abstract object? GetTextDocumentIdentifier(TParams request);
+        public abstract TextDocumentIdentifier GetTextDocumentIdentifier(TParams request);
 
         protected record DocumentSnapshotAndVersion(DocumentSnapshot Snapshot, int Version);
     }

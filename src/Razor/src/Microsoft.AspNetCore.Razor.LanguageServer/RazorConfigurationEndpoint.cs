@@ -25,11 +25,6 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
 
         public bool MutatesSolutionState => true;
 
-        public object? GetTextDocumentIdentifier(DidChangeConfigurationParamsBridge request)
-        {
-            return null;
-        }
-
         public async Task HandleNotificationAsync(DidChangeConfigurationParamsBridge request, RazorRequestContext context, CancellationToken cancellationToken)
         {
             context.Logger.LogInformation("Settings changed. Updating the server.");

@@ -48,7 +48,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.LinkedEditingRange
             return new RegistrationExtensionResult(ServerCapability, option);
         }
 
-        public object? GetTextDocumentIdentifier(LinkedEditingRangeParamsBridge request)
+        public TextDocumentIdentifier GetTextDocumentIdentifier(LinkedEditingRangeParamsBridge request)
         {
             return request.TextDocument;
         }

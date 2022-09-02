@@ -44,7 +44,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
             return new RegistrationExtensionResult(ServerCapability, new SumType<bool, DocumentRangeFormattingOptions>(new DocumentRangeFormattingOptions()));
         }
 
-        public object? GetTextDocumentIdentifier(DocumentRangeFormattingParamsBridge request)
+        public TextDocumentIdentifier GetTextDocumentIdentifier(DocumentRangeFormattingParamsBridge request)
         {
             return request.TextDocument;
         }

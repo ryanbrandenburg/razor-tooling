@@ -7,7 +7,7 @@ using System.Collections.Immutable;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using CommonLanguageServerProtocol.Framework;
+using Microsoft.CommonLanguageServerProtocol.Framework;
 using Microsoft.AspNetCore.Mvc.Razor.Extensions;
 using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.AspNetCore.Razor.LanguageServer;
@@ -29,38 +29,46 @@ namespace Microsoft.AspNetCore.Razor.Test.Common
 {
     public abstract class LanguageServerTestBase
     {
-        private class NoOpLspLogger : ILspLogger
+        private class NoOpLspLogger : ILspLogger, ILogger
         {
             public static NoOpLspLogger Instance = new NoOpLspLogger();
 
-            public Task LogEndContextAsync(string message, params object[] @params)
+            public IDisposable BeginScope<TState>(TState state)
             {
-                return Task.CompletedTask;
+                throw new NotImplementedException();
             }
 
-            public Task LogErrorAsync(string message, params object[] @params)
+            public bool IsEnabled(LogLevel logLevel)
             {
-                return Task.CompletedTask;
+                return true;
             }
 
-            public Task LogExceptionAsync(Exception exception, string? message = null, params object[] @params)
+            public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception? exception, Func<TState, Exception?, string> formatter)
             {
-                return Task.CompletedTask;
             }
 
-            public Task LogInformationAsync(string message, params object[] @params)
+            public void LogEndContext(string message, params object[] @params)
             {
-                return Task.CompletedTask;
             }
 
-            public Task LogStartContextAsync(string message, params object[] @params)
+            public void LogError(string message, params object[] @params)
             {
-                return Task.CompletedTask;
             }
 
-            public Task LogWarningAsync(string message, params object[] @params)
+            public void LogException(Exception exception, string? message = null, params object[] @params)
             {
-                return Task.CompletedTask;
+            }
+
+            public void LogInformation(string message, params object[] @params)
+            {
+            }
+
+            public void LogStartContext(string message, params object[] @params)
+            {
+            }
+
+            public void LogWarning(string message, params object[] @params)
+            {
             }
         }
 
@@ -100,9 +108,9 @@ namespace Microsoft.AspNetCore.Razor.Test.Common
 
         internal IRazorSpanMappingService SpanMappingService { get; }
 
-        protected ILspLogger LspLogger { get; }
+        protected ILspLogger LspLogger { get; } = NoOpLspLogger.Instance;
 
-        protected ILogger Logger { get; }
+        protected ILogger Logger { get; } = NoOpLspLogger.Instance;
 
         protected ILoggerFactory LoggerFactory { get; }
 

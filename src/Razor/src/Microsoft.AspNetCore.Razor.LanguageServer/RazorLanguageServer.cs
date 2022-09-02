@@ -4,8 +4,8 @@
 using System;
 using System.IO;
 using System.Threading.Tasks;
-using CommonLanguageServerProtocol.Framework;
-using CommonLanguageServerProtocol.Framework.Handlers;
+using Microsoft.CommonLanguageServerProtocol.Framework;
+using Microsoft.CommonLanguageServerProtocol.Framework.Handlers;
 using Microsoft.AspNetCore.Razor.LanguageServer.AutoInsert;
 using Microsoft.AspNetCore.Razor.LanguageServer.CodeActions;
 using Microsoft.AspNetCore.Razor.LanguageServer.Common;
@@ -64,8 +64,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
                 .AddLogging();
 
             _configureServer(services);
-            var lifeCycleManager = new LifeCycleManager<RazorRequestContext>(this);
-            services.AddSingleton<LifeCycleManager<RazorRequestContext>>(lifeCycleManager);
+            services.AddSingleton<ILifeCycleManager>(this);
             services.AddSingleton<IInitializeManager<InitializeParams, InitializeResult>, CapabilitiesManager>();
             services.AddSingleton<IRequestContextFactory<RazorRequestContext>, RazorRequestContextFactory>();
 
@@ -143,7 +142,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
 
             return lspServices;
 
-            void AddHandlers(IServiceCollection services, LanguageServerFeatureOptions featureOptions)
+            static void AddHandlers(IServiceCollection services, LanguageServerFeatureOptions featureOptions)
             {
                 // Lifetime Endpoints
                 AddHandler<RazorInitializeEndpoint>(services);
@@ -224,8 +223,6 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
 
             return lspServices.GetRequiredService<T>();
         }
-
-        internal IObservable<bool> Shutdown;
 
         internal sealed class RazorLanguageServer : IAsyncDisposable
         {

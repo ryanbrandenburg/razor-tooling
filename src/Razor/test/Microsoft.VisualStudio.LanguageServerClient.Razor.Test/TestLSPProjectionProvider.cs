@@ -1,12 +1,10 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the MIT license. See License.txt in the project root for license information.
 
-#nullable disable
-
 using System;
 using System.Threading;
 using System.Threading.Tasks;
-using CommonLanguageServerProtocol.Framework;
+using Microsoft.CommonLanguageServerProtocol.Framework;
 using Microsoft.AspNetCore.Razor.LanguageServer;
 using Microsoft.AspNetCore.Razor.LanguageServer.Protocol;
 using Microsoft.AspNetCore.Razor.LanguageServer.Test.Common;
@@ -23,32 +21,32 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.Test
     {
         public static NoOpLspLogger Instance = new NoOpLspLogger();
 
-        public Task LogEndContextAsync(string message, params object[] @params)
+        public void LogEndContext(string message, params object[] @params)
         {
             throw new NotImplementedException();
         }
 
-        public Task LogErrorAsync(string message, params object[] @params)
+        public void LogError(string message, params object[] @params)
         {
             throw new NotImplementedException();
         }
 
-        public Task LogExceptionAsync(Exception exception, string? message = null, params object[] @params)
+        public void LogException(Exception exception, string? message = null, params object[] @params)
         {
             throw new NotImplementedException();
         }
 
-        public Task LogInformationAsync(string message, params object[] @params)
+        public void LogInformation(string message, params object[] @params)
         {
             throw new NotImplementedException();
         }
 
-        public Task LogStartContextAsync(string message, params object[] @params)
+        public void LogStartContext(string message, params object[] @params)
         {
             throw new NotImplementedException();
         }
 
-        public Task LogWarningAsync(string message, params object[] @params)
+        public void LogWarning(string message, params object[] @params)
         {
             throw new NotImplementedException();
         }
@@ -64,13 +62,13 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.Test
         {
         }
 
-        public override Task<ProjectionResult> GetProjectionAsync(LSPDocumentSnapshot documentSnapshot, Position position, CancellationToken cancellationToken)
+        public override Task<ProjectionResult?> GetProjectionAsync(LSPDocumentSnapshot documentSnapshot, Position position, CancellationToken cancellationToken)
         {
             var text = documentSnapshot.Snapshot.GetText();
             var sourceText = SourceText.From(text);
             if (!position.TryGetAbsoluteIndex(sourceText, TestLogger.Instance, out var absoluteIndex))
             {
-                return Task.FromResult<ProjectionResult>(null);
+                return Task.FromResult<ProjectionResult?>(null);
             }
 
             var codeDocument = HandlerTestBase.CreateCodeDocument(text, documentSnapshot.Uri.AbsolutePath);
@@ -80,7 +78,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.Test
             {
                 if (!_mappingService.TryMapToProjectedDocumentPosition(codeDocument, absoluteIndex, out var projectedPosition, out var projectedIndex))
                 {
-                    return Task.FromResult<ProjectionResult>(null);
+                    return Task.FromResult<ProjectionResult?>(null);
                 }
 
                 var vsProjectedPosition = new Position { Line = projectedPosition.Line, Character = projectedPosition.Character };
@@ -95,7 +93,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.Test
                         Uri = csharpVirtualDocument.Uri
                     };
 
-                    return Task.FromResult(projectionResult);
+                    return Task.FromResult<ProjectionResult?>(projectionResult);
                 }
             }
 
@@ -108,10 +106,10 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.Test
                 HostDocumentVersion = documentSnapshot.Version
             };
 
-            return Task.FromResult(defaultProjection);
+            return Task.FromResult<ProjectionResult?>(defaultProjection);
         }
 
-        public override Task<ProjectionResult> GetProjectionForCompletionAsync(LSPDocumentSnapshot documentSnapshot, Position position, CancellationToken cancellationToken)
+        public override Task<ProjectionResult?> GetProjectionForCompletionAsync(LSPDocumentSnapshot documentSnapshot, Position position, CancellationToken cancellationToken)
             => GetProjectionAsync(documentSnapshot, position, cancellationToken);
     }
 }

@@ -137,16 +137,16 @@ namespace Microsoft.AspNetCore.Razor.Microbenchmarks.LanguageServer
             }
 
             // We can't get C# responses without significant amounts of extra work, so let's just shim it for now, any non-Null result is fine.
-            internal override async Task<SemanticRange[]?> GetCSharpSemanticRangesAsync(
+            internal override Task<SemanticRange[]> GetCSharpSemanticRangesAsync(
                 RazorCodeDocument codeDocument,
                 TextDocumentIdentifier textDocumentIdentifier,
                 Range razorRange,
                 long documentVersion,
                 CancellationToken cancellationToken,
-                string? previousResultId = null)
+                string previousResultId = null)
             {
                 var result = Array.Empty<SemanticRange>();
-                return result;
+                return Task.FromResult(result);
             }
         }
     }

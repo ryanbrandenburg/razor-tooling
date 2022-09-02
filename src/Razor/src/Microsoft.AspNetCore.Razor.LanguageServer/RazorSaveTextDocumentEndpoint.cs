@@ -5,6 +5,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Razor.LanguageServer.EndpointContracts;
 using Microsoft.CodeAnalysis.Razor;
+using Microsoft.VisualStudio.LanguageServer.Protocol;
 
 namespace Microsoft.AspNetCore.Razor.LanguageServer
 {
@@ -12,14 +13,16 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
     {
         public bool MutatesSolutionState => false;
 
-        public object? GetTextDocumentIdentifier(DidSaveTextDocumentParamsBridge request)
+        public TextDocumentIdentifier GetTextDocumentIdentifier(DidSaveTextDocumentParamsBridge request)
         {
             return request.TextDocument;
         }
 
-        public async Task HandleNotificationAsync(DidSaveTextDocumentParamsBridge request, RazorRequestContext context, CancellationToken cancellationToken)
+        public Task HandleNotificationAsync(DidSaveTextDocumentParamsBridge request, RazorRequestContext context, CancellationToken cancellationToken)
         {
-            await context.LspLogger.LogInformationAsync($"Saved Document {request.TextDocument.Uri.GetAbsoluteOrUNCPath()}");
+            context.LspLogger.LogInformation($"Saved Document {request.TextDocument.Uri.GetAbsoluteOrUNCPath()}");
+
+            return Task.CompletedTask;
         }
     }
 }

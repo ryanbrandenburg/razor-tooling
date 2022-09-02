@@ -54,7 +54,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.AutoInsert
             return new RegistrationExtensionResult(AssociatedServerCapability, registrationOptions);
         }
 
-        public object? GetTextDocumentIdentifier(OnAutoInsertParamsBridge request)
+        public TextDocumentIdentifier GetTextDocumentIdentifier(OnAutoInsertParamsBridge request)
         {
             return request.TextDocument;
         }

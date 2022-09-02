@@ -221,7 +221,7 @@ internal class InlineCompletionEndpoint : IVSInlineCompletionEndpoint
         return true;
     }
 
-    public object? GetTextDocumentIdentifier(VSInternalInlineCompletionRequestBridge request)
+    public TextDocumentIdentifier GetTextDocumentIdentifier(VSInternalInlineCompletionRequestBridge request)
     {
         return request.TextDocument;
     }

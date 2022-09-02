@@ -43,7 +43,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Semantic
             });
         }
 
-        public object? GetTextDocumentIdentifier(SemanticTokensRefreshParamsBridge request)
+        public TextDocumentIdentifier GetTextDocumentIdentifier(SemanticTokensRefreshParamsBridge request)
         {
             return null;
         }

@@ -4,7 +4,7 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
-using CommonLanguageServerProtocol.Framework;
+using Microsoft.CommonLanguageServerProtocol.Framework;
 using Microsoft.AspNetCore.Razor.LanguageServer.EndpointContracts;
 using Microsoft.Extensions.Logging;
 using Microsoft.VisualStudio.LanguageServer.Protocol;
@@ -20,19 +20,28 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             _lspServices = lspServices;
         }
 
-        public async Task<RazorRequestContext> CreateRequestContextAsync(IQueueItem<RazorRequestContext> queueItem, CancellationToken cancellationToken)
+        public async Task<RazorRequestContext> CreateRequestContextAsync<TRequestParams>(IQueueItem<RazorRequestContext> queueItem, TRequestParams @params, CancellationToken cancellationToken)
         {
             DocumentContext? documentContext = null;
-            if (queueItem.TextDocument is not null)
+            var textDocumentHandler = queueItem.MethodHandler as ITextDocumentIdentifierHandler;
+
+            TextDocumentIdentifier? textDocumentIdentifier = null;
+            if (textDocumentHandler is not null)
             {
-                var textDocumentUri = queueItem.TextDocument switch
+                if (textDocumentHandler is ITextDocumentIdentifierHandler<TRequestParams, TextDocumentIdentifier> tdiHandler)
                 {
-                    TextDocumentIdentifier identifier => identifier.Uri,
-                    Uri uri => uri,
-                    _ => throw new NotImplementedException(),
-                };
+                    textDocumentIdentifier = tdiHandler.GetTextDocumentIdentifier(@params);
+                }
+                else
+                {
+                    throw new NotImplementedException();
+                }
+            }
+
+            if (textDocumentIdentifier is not null)
+            {
                 var documentContextFactory = _lspServices.GetRequiredService<DocumentContextFactory>();
-                documentContext = await documentContextFactory.TryCreateAsync(textDocumentUri, cancellationToken);
+                documentContext = await documentContextFactory.TryCreateAsync(textDocumentIdentifier.Uri, cancellationToken);
             }
 
             var lspLogger = _lspServices.GetRequiredService<ILspLogger>();

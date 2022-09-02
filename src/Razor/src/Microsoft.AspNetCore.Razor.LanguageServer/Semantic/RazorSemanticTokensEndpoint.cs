@@ -32,7 +32,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Semantic
             var semanticTokens = await semanticTokensInfoService.GetSemanticTokensAsync(request.TextDocument, request.Range, context.DocumentContext, cancellationToken);
             var amount = semanticTokens is null ? "no" : (semanticTokens.Data.Length / 5).ToString(Thread.CurrentThread.CurrentCulture);
 
-            await context.LspLogger.LogInformationAsync($"Returned {amount} semantic tokens for range {request.Range} in {request.TextDocument.Uri}.");
+            context.LspLogger.LogInformation($"Returned {amount} semantic tokens for range {request.Range} in {request.TextDocument.Uri}.");
 
             if (semanticTokens is not null)
             {
@@ -56,7 +56,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Semantic
                 });
         }
 
-        public object? GetTextDocumentIdentifier(SemanticTokensRangeParamsBridge request)
+        public TextDocumentIdentifier GetTextDocumentIdentifier(SemanticTokensRangeParamsBridge request)
         {
             return request.TextDocument;
         }

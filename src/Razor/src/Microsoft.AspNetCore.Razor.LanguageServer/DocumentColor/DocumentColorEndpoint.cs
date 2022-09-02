@@ -34,7 +34,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.DocumentColor
             return new RegistrationExtensionResult(ServerCapabilities, options);
         }
 
-        public object? GetTextDocumentIdentifier(DocumentColorParamsBridge request)
+        public TextDocumentIdentifier GetTextDocumentIdentifier(DocumentColorParamsBridge request)
         {
             return request.TextDocument;
         }

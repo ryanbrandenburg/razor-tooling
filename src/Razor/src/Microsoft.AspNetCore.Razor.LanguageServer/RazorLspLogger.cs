@@ -2,8 +2,7 @@
 // Licensed under the MIT license. See License.txt in the project root for license information.
 
 using System;
-using System.Threading.Tasks;
-using CommonLanguageServerProtocol.Framework;
+using Microsoft.CommonLanguageServerProtocol.Framework;
 
 namespace Microsoft.AspNetCore.Razor.LanguageServer
 {
@@ -11,34 +10,28 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
     {
         public static RazorLspLogger Instance = new RazorLspLogger();
 
-        public Task LogEndContextAsync(string message, params object[] @params)
+        public void LogEndContext(string message, params object[] @params)
         {
-            return Task.CompletedTask;
         }
 
-        public Task LogErrorAsync(string message, params object[] @params)
+        public void LogError(string message, params object[] @params)
         {
-            return Task.CompletedTask;
         }
 
-        public Task LogExceptionAsync(Exception exception, string? message = null, params object[] @params)
+        public void LogException(Exception exception, string? message = null, params object[] @params)
         {
-            return Task.CompletedTask;
         }
 
-        public Task LogInformationAsync(string message, params object[] @params)
+        public void LogInformation(string message, params object[] @params)
         {
-            return Task.CompletedTask;
         }
 
-        public Task LogStartContextAsync(string message, params object[] @params)
+        public void LogStartContext(string message, params object[] @params)
         {
-            return Task.CompletedTask;
         }
 
-        public Task LogWarningAsync(string message, params object[] @params)
+        public void LogWarning(string message, params object[] @params)
         {
-            return Task.CompletedTask;
         }
     }
 }

@@ -83,7 +83,6 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
                 throw new ArgumentNullException(nameof(request));
             }
 
-
             if (!IsSupported())
             {
                 return default;
@@ -118,7 +117,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             return remappedResponse;
         }
 
-        public object? GetTextDocumentIdentifier(TRequest request)
+        public TextDocumentIdentifier GetTextDocumentIdentifier(TRequest request)
         {
             return request.TextDocument;
         }

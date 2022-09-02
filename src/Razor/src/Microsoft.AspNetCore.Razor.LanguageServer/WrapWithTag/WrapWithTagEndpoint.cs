@@ -42,7 +42,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.WrapWithTag
 
         public bool MutatesSolutionState => false;
 
-        public object? GetTextDocumentIdentifier(WrapWithTagParamsBridge request)
+        public TextDocumentIdentifier GetTextDocumentIdentifier(WrapWithTagParamsBridge request)
         {
             return request.TextDocument;
         }

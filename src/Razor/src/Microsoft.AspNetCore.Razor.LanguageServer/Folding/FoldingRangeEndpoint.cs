@@ -208,7 +208,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Folding
                CollapsedText = collapsedText
            };
 
-        public object? GetTextDocumentIdentifier(VSFoldingRangeParamsBridge request)
+        public TextDocumentIdentifier GetTextDocumentIdentifier(VSFoldingRangeParamsBridge request)
         {
             return request.TextDocument;
         }

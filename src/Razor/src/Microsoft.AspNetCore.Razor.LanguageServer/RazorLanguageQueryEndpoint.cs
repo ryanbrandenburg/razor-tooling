@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Razor.LanguageServer.Common.Extensions;
 using Microsoft.AspNetCore.Razor.LanguageServer.EndpointContracts;
 using Microsoft.AspNetCore.Razor.LanguageServer.Protocol;
 using Microsoft.CodeAnalysis.Text;
+using Microsoft.VisualStudio.LanguageServer.Protocol;
 
 namespace Microsoft.AspNetCore.Razor.LanguageServer
 {
@@ -21,9 +22,12 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             _documentMappingService = documentMappingService;
         }
 
-        public object? GetTextDocumentIdentifier(RazorLanguageQueryParams request)
+        public TextDocumentIdentifier GetTextDocumentIdentifier(RazorLanguageQueryParams request)
         {
-            return request.Uri;
+            return new TextDocumentIdentifier
+            {
+                Uri = request.Uri
+            };
         }
 
         public async Task<RazorLanguageQueryResponse> HandleRequestAsync(RazorLanguageQueryParams request, RazorRequestContext requestContext, CancellationToken cancellationToken)
@@ -74,7 +78,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
                 }
             }
 
-            await requestContext.LspLogger.LogInformationAsync("Language query request for ({requestPositionLine}, {requestPositionCharacter}) = {languageKind} at ({responsePositionLine}, {responsePositionCharacter})",
+            requestContext.LspLogger.LogInformation("Language query request for ({requestPositionLine}, {requestPositionCharacter}) = {languageKind} at ({responsePositionLine}, {responsePositionCharacter})",
                 request.Position.Line, request.Position.Character, languageKind, responsePosition.Line, responsePosition.Character);
 
             return new RazorLanguageQueryResponse()

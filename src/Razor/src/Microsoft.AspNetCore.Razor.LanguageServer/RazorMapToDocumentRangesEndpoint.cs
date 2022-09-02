@@ -23,9 +23,12 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
 
         public bool MutatesSolutionState => false;
 
-        public object? GetTextDocumentIdentifier(RazorMapToDocumentRangesParams request)
+        public TextDocumentIdentifier GetTextDocumentIdentifier(RazorMapToDocumentRangesParams request)
         {
-            return request.RazorDocumentUri;
+            return new TextDocumentIdentifier
+            {
+                Uri = request.RazorDocumentUri
+            };
         }
 
         public async Task<RazorMapToDocumentRangesResponse?> HandleRequestAsync(RazorMapToDocumentRangesParams request, RazorRequestContext requestContext, CancellationToken cancellationToken)

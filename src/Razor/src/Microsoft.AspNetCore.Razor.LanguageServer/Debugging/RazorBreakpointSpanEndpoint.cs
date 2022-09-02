@@ -152,9 +152,12 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Debugging
             return MappingBehavior.Strict;
         }
 
-        public object? GetTextDocumentIdentifier(RazorBreakpointSpanParamsBridge request)
+        public TextDocumentIdentifier GetTextDocumentIdentifier(RazorBreakpointSpanParamsBridge request)
         {
-            return request.Uri;
+            return new TextDocumentIdentifier
+            {
+                Uri = request.Uri
+            };
         }
     }
 }

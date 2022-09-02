@@ -319,7 +319,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.CodeActions
             return availableCodeActionNames.ToImmutableHashSet();
         }
 
-        public object? GetTextDocumentIdentifier(CodeActionParamsBridge request)
+        public TextDocumentIdentifier GetTextDocumentIdentifier(CodeActionParamsBridge request)
         {
             return request.TextDocument;
         }

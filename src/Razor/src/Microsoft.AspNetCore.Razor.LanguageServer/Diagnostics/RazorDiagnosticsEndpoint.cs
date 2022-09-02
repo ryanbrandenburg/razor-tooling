@@ -570,9 +570,12 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Diagnostics
             return true;
         }
 
-        public object? GetTextDocumentIdentifier(RazorDiagnosticsParams request)
+        public TextDocumentIdentifier GetTextDocumentIdentifier(RazorDiagnosticsParams request)
         {
-            return request.RazorDocumentUri;
+            return new TextDocumentIdentifier
+            {
+                Uri = request.RazorDocumentUri
+            };
         }
     }
 }

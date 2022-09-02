@@ -5,15 +5,12 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
-using System.Threading.Tasks;
-using CommonLanguageServerProtocol.Framework;
+using Microsoft.CommonLanguageServerProtocol.Framework;
 using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.AspNetCore.Razor.Language.Components;
 using Microsoft.AspNetCore.Razor.Test.Common;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Razor.ProjectSystem;
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.VisualStudio.Editor.Razor;
 using Microsoft.VisualStudio.LanguageServer.Protocol;
 using Moq;
@@ -26,32 +23,32 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Completion
     {
         public static NullLspLogger Instance = new NullLspLogger();
 
-        public Task LogEndContextAsync(string message, params object[] @params)
+        public void LogEndContext(string message, params object[] @params)
         {
             throw new NotImplementedException();
         }
 
-        public Task LogErrorAsync(string message, params object[] @params)
+        public void LogError(string message, params object[] @params)
         {
             throw new NotImplementedException();
         }
 
-        public Task LogExceptionAsync(Exception exception, string? message = null, params object[] @params)
+        public void LogException(Exception exception, string? message = null, params object[] @params)
         {
             throw new NotImplementedException();
         }
 
-        public Task LogInformationAsync(string message, params object[] @params)
+        public void LogInformation(string message, params object[] @params)
         {
             throw new NotImplementedException();
         }
 
-        public Task LogStartContextAsync(string message, params object[] @params)
+        public void LogStartContext(string message, params object[] @params)
         {
             throw new NotImplementedException();
         }
 
-        public Task LogWarningAsync(string message, params object[] @params)
+        public void LogWarning(string message, params object[] @params)
         {
             throw new NotImplementedException();
         }
@@ -237,10 +234,6 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Completion
         internal HtmlFactsService HtmlFactsService { get; }
 
         protected TagHelperFactsService TagHelperFactsService { get; }
-
-        protected ILogger Logger { get; } = NullLogger.Instance;
-
-        protected ILspLogger LspLogger { get; } = NullLspLogger.Instance;
 
         internal static RazorCodeDocument CreateCodeDocument(string text, bool isRazorFile, params TagHelperDescriptor[] tagHelpers)
         {

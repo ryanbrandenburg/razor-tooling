@@ -47,9 +47,12 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.DocumentPresentation
             return new RegistrationExtensionResult(AssociatedServerCapability, options: true);
         }
 
-        public override object? GetTextDocumentIdentifier(UriPresentationParams request)
+        public override TextDocumentIdentifier GetTextDocumentIdentifier(UriPresentationParams request)
         {
-            return request.Uris.Last();
+            return new TextDocumentIdentifier
+            {
+                Uri = request.Uris.Last()
+            };
         }
 
         protected override IRazorPresentationParams CreateRazorRequestParameters(UriPresentationParams request)

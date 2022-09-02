@@ -33,7 +33,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Completion
             return null;
         }
 
-        public object? GetTextDocumentIdentifier(VSCompletionItemBridge request)
+        public TextDocumentIdentifier GetTextDocumentIdentifier(VSCompletionItemBridge request)
         {
             return null;
         }

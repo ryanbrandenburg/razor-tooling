@@ -297,10 +297,5 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Definition
                 _ => null
             };
         }
-
-        public object? GetTextDocumentIdentifier(DefinitionParamsBridge request)
-        {
-            return request.TextDocument;
-        }
     }
 }

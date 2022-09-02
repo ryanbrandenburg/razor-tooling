@@ -17,9 +17,12 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
     {
         public bool MutatesSolutionState => false;
 
-        public object? GetTextDocumentIdentifier(RazorMapToDocumentEditsParams request)
+        public TextDocumentIdentifier GetTextDocumentIdentifier(RazorMapToDocumentEditsParams request)
         {
-            return request.RazorDocumentUri;
+            return new TextDocumentIdentifier
+            {
+                Uri = request.RazorDocumentUri
+            };
         }
 
         public async Task<RazorMapToDocumentEditsResponse> HandleRequestAsync(RazorMapToDocumentEditsParams request, RazorRequestContext requestContext, CancellationToken cancellationToken)

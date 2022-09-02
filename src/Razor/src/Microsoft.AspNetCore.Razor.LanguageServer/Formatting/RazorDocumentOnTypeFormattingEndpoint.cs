@@ -149,7 +149,7 @@ internal class RazorDocumentOnTypeFormattingEndpoint : IVSDocumentOnTypeFormatti
         return false;
     }
 
-    public object? GetTextDocumentIdentifier(DocumentOnTypeFormattingParamsBridge request)
+    public TextDocumentIdentifier GetTextDocumentIdentifier(DocumentOnTypeFormattingParamsBridge request)
     {
         return request.TextDocument;
     }

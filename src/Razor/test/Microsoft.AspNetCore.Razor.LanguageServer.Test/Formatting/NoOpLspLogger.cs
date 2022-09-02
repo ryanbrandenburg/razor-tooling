@@ -3,7 +3,7 @@
 
 using System;
 using System.Threading.Tasks;
-using CommonLanguageServerProtocol.Framework;
+using Microsoft.CommonLanguageServerProtocol.Framework;
 
 namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
 {
@@ -16,27 +16,27 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
             throw new NotImplementedException();
         }
 
-        public Task LogErrorAsync(string message, params object[] @params)
+        public Task LogError(string message, params object[] @params)
         {
             throw new NotImplementedException();
         }
 
-        public Task LogExceptionAsync(Exception exception, string? message = null, params object[] @params)
+        public Task LogException(Exception exception, string? message = null, params object[] @params)
         {
             throw new NotImplementedException();
         }
 
-        public Task LogInformationAsync(string message, params object[] @params)
+        public Task LogInformation(string message, params object[] @params)
         {
             throw new NotImplementedException();
         }
 
-        public Task LogStartContextAsync(string message, params object[] @params)
+        public Task LogStartContext(string message, params object[] @params)
         {
             throw new NotImplementedException();
         }
 
-        public Task LogWarningAsync(string message, params object[] @params)
+        public Task LogWarning(string message, params object[] @params)
         {
             throw new NotImplementedException();
         }
