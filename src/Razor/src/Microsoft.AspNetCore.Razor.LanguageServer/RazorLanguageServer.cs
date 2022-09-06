@@ -43,7 +43,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
         private readonly ProjectSnapshotManagerDispatcher? _projectSnapshotManagerDispatcher;
         private readonly Action<IServiceCollection>? _configureServer;
 
-        private TaskCompletionSource<int> tcs = new();
+        private readonly TaskCompletionSource<int> _tcs = new();
 
         public RazorLanguageServerTarget(
             JsonRpc jsonRpc,
@@ -241,11 +241,11 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
         {
             var exit = base.ExitAsync();
 
-            tcs.TrySetResult(0);
+            _tcs.TrySetResult(0);
             return exit;
         }
 
-        internal Task WaitForExit => tcs.Task;
+        internal Task WaitForExit => _tcs.Task;
 
         internal sealed class RazorLanguageServer : IAsyncDisposable
         {

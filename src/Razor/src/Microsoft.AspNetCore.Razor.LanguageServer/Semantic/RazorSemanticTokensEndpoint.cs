@@ -43,7 +43,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Semantic
             return semanticTokens;
         }
 
-        public RegistrationExtensionResult? GetRegistration(VSInternalClientCapabilities clientCapabilities)
+        public RegistrationExtensionResult GetRegistration(VSInternalClientCapabilities clientCapabilities)
         {
             const string ServerCapability = "semanticTokensProvider";
 

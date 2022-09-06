@@ -32,7 +32,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Hover
             _documentMappingService = documentMappingService ?? throw new ArgumentNullException(nameof(documentMappingService));
         }
 
-        public RegistrationExtensionResult? GetRegistration(VSInternalClientCapabilities clientCapabilities)
+        public RegistrationExtensionResult GetRegistration(VSInternalClientCapabilities clientCapabilities)
         {
             const string AssociatedServerCapability = "hoverProvider";
             _clientCapabilities = clientCapabilities;

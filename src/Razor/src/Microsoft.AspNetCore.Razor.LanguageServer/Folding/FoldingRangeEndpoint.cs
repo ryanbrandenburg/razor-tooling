@@ -42,7 +42,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Folding
             _logger = loggerFactory.CreateLogger<FoldingRangeEndpoint>();
         }
 
-        public RegistrationExtensionResult? GetRegistration(VSInternalClientCapabilities clientCapabilities)
+        public RegistrationExtensionResult GetRegistration(VSInternalClientCapabilities clientCapabilities)
         {
             const string AssociatedServerCapability = "foldingRangeProvider";
 

@@ -52,7 +52,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Refactoring
             _documentMappingService = documentMappingService ?? throw new ArgumentNullException(nameof(documentMappingService));
         }
 
-        public RegistrationExtensionResult? GetRegistration(VSInternalClientCapabilities clientCapabilities)
+        public RegistrationExtensionResult GetRegistration(VSInternalClientCapabilities clientCapabilities)
         {
             const string ServerCapability = "renameProvider";
             var options = new RenameOptions

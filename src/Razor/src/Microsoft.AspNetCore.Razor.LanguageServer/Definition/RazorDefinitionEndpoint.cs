@@ -47,7 +47,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Definition
 
         public override bool MutatesSolutionState => false;
 
-        public RegistrationExtensionResult? GetRegistration(VSInternalClientCapabilities clientCapabilities)
+        public RegistrationExtensionResult GetRegistration(VSInternalClientCapabilities clientCapabilities)
         {
             const string ServerCapability = "definitionProvider";
             var option = new SumType<bool, DefinitionOptions>(new DefinitionOptions());

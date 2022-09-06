@@ -69,7 +69,7 @@ internal class InlineCompletionEndpoint : IVSInlineCompletionEndpoint
         _adhocWorkspaceFactory = adhocWorkspaceFactory;
     }
 
-    public RegistrationExtensionResult? GetRegistration(VSInternalClientCapabilities clientCapabilities)
+    public RegistrationExtensionResult GetRegistration(VSInternalClientCapabilities clientCapabilities)
     {
         const string AssociatedServerCapability = "_vs_inlineCompletionOptions";
 

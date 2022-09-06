@@ -68,7 +68,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Completion
             _completionListCache = completionListCache;
         }
 
-        public RegistrationExtensionResult? GetRegistration(VSInternalClientCapabilities clientCapabilities)
+        public RegistrationExtensionResult GetRegistration(VSInternalClientCapabilities clientCapabilities)
         {
             _completionCapability = clientCapabilities.TextDocument?.Completion as VSInternalCompletionSetting;
             _clientCapabilities = clientCapabilities;

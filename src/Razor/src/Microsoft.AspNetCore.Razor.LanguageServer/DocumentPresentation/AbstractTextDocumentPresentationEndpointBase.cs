@@ -54,7 +54,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.DocumentPresentation
 
         public bool MutatesSolutionState => false;
 
-        public abstract RegistrationExtensionResult? GetRegistration(VSInternalClientCapabilities clientCapabilities);
+        public abstract RegistrationExtensionResult GetRegistration(VSInternalClientCapabilities clientCapabilities);
 
         protected abstract IRazorPresentationParams CreateRazorRequestParameters(TParams request);
 

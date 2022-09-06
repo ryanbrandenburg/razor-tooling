@@ -92,7 +92,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.CodeActions
             return commandsOrCodeActions.ToArray();
         }
 
-        public RegistrationExtensionResult? GetRegistration(VSInternalClientCapabilities clientCapabilities)
+        public RegistrationExtensionResult GetRegistration(VSInternalClientCapabilities clientCapabilities)
         {
             _supportsCodeActionResolve = clientCapabilities.TextDocument?.CodeAction?.ResolveSupport != null;
 

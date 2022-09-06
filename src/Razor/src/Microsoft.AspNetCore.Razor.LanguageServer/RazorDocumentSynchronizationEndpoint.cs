@@ -29,7 +29,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             _projectService = razorProjectService;
         }
 
-        public RegistrationExtensionResult? GetRegistration(VSInternalClientCapabilities clientCapabilities)
+        public RegistrationExtensionResult GetRegistration(VSInternalClientCapabilities clientCapabilities)
         {
             const string AssociatedServerCapability = "textDocumentSync";
             var registrationOptions = new TextDocumentSyncOptions()

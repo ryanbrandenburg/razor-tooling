@@ -26,7 +26,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.DocumentColor
 
         public bool MutatesSolutionState => false;
 
-        public RegistrationExtensionResult? GetRegistration(VSInternalClientCapabilities clientCapabilities)
+        public RegistrationExtensionResult GetRegistration(VSInternalClientCapabilities clientCapabilities)
         {
             const string ServerCapabilities = "colorProvider";
             var options = new SumType<bool, DocumentColorOptions>(new DocumentColorOptions());

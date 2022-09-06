@@ -54,7 +54,7 @@ internal class RazorDocumentOnTypeFormattingEndpoint : IVSDocumentOnTypeFormatti
         _optionsMonitor = optionsMonitor;
     }
 
-    public RegistrationExtensionResult? GetRegistration(VSInternalClientCapabilities clientCapabilities)
+    public RegistrationExtensionResult GetRegistration(VSInternalClientCapabilities clientCapabilities)
     {
         const string ServerCapability = "documentOnTypeFormattingProvider";
 
